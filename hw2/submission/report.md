@@ -72,6 +72,8 @@ $$\hat{A}_t = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}, \quad \delta_
 
 where $\lambda$ is the GAE smoothing parameter. GAE interpolates between the high-bias one-step TD error ($\lambda = 0$) and the high-variance Monte Carlo return ($\lambda = 1$).
 
+Gymnasium distinguishes **terminated** (the MDP reached an absorbing state, e.g.\ the walker fell) from **truncated** (the time limit of 1600 steps was hit). Only true terminations zero out the bootstrap: $V(s') = 0$. On time-limit truncation the episode is cut artificially, so the return should still be bootstrapped from $V(s')$. We handle this by folding $\gamma V(s')$ into the stored reward at truncation steps before calling the GAE computation, so the delta formula requires no structural changes.
+
 ## Full Objective
 
 The total loss minimized at each update is:
@@ -82,30 +84,30 @@ where $\mathcal{L}^{\text{VF}} = \mathbb{E}_t[(V_\phi(s_t) - \hat{R}_t)^2]$ is t
 
 ## Continuous Action Policy
 
-The Actor outputs the **mean** $\mu(s)$ of a diagonal Gaussian distribution, while the **log standard deviation** is a learned global parameter (not state-dependent). A $\tanh$ activation is applied to the mean output to enforce the $[-1, 1]$ action range. Actions are sampled from $\mathcal{N}(\mu(s), \sigma^2 I)$ and clamped to $[-1, 1]$ during rollout collection.
+The Actor outputs the **mean** $\mu(s)$ of a diagonal Gaussian distribution, while the **log standard deviation** is a learned global parameter (not state-dependent). A $\tanh$ activation is applied to the mean output to bias it into $[-1, 1]$. Actions are sampled from $\mathcal{N}(\mu(s), \sigma^2 I)$; the raw sample and its log-probability are stored in the rollout buffer, and the sample is clipped to $[-1, 1]$ only when passed to the environment. This keeps the importance-sampling ratio $r_t(\theta)$ consistent with the executed action.
 
 \newpage
 
 # Implementation Details & Hyperparameters
 
-| Parameter | Value |
-| :---------------------------------- | :------ |
-| Environment | BipedalWalker-v3 |
-| Algorithm | PPO |
-| Total timesteps | 2,000,000 |
-| Rollout steps per update | 2,048 |
-| PPO update epochs per rollout | 10 |
-| Mini-batch size | 64 |
-| Optimizer | Adam |
-| Learning rate $\alpha$ | $3 \times 10^{-4}$ |
-| Discount factor $\gamma$ | 0.99 |
-| GAE $\lambda$ | 0.95 |
-| PPO clip range $\varepsilon$ | 0.2 |
-| Value loss coefficient $c_v$ | 0.5 |
-| Entropy bonus coefficient $c_e$ | 0.01 |
-| Gradient clipping ($\ell_2$ norm) | 0.5 |
-| Network hidden dim | 256 |
-| Random seed | 42 |
+| Parameter                         | Value              |
+| :-------------------------------- | :----------------- |
+| Environment                       | BipedalWalker-v3   |
+| Algorithm                         | PPO                |
+| Total timesteps                   | 2,000,000          |
+| Rollout steps per update          | 2,048              |
+| PPO update epochs per rollout     | 10                 |
+| Mini-batch size                   | 64                 |
+| Optimizer                         | Adam               |
+| Learning rate $\alpha$            | $3 \times 10^{-4}$ |
+| Discount factor $\gamma$          | 0.99               |
+| GAE $\lambda$                     | 0.95               |
+| PPO clip range $\varepsilon$      | 0.2                |
+| Value loss coefficient $c_v$      | 0.5                |
+| Entropy bonus coefficient $c_e$   | 0.01               |
+| Gradient clipping ($\ell_2$ norm) | 0.5                |
+| Network hidden dim                | 256                |
+| Random seed                       | 42                 |
 
 Table: Hyperparameters used for PPO on BipedalWalker-v3.
 
@@ -130,21 +132,28 @@ The 10-episode moving average rises steadily, reaching its peak of approximately
 
 # Evaluation Results
 
-After training, the saved policy was evaluated for 5 episodes using deterministic rollouts (no training, no exploration noise). Results are shown in Table 2.
+After training, the saved policy is evaluated in two phases using deterministic rollouts (action = policy mean, no sampling noise).
 
-| Episode | Total Reward | Frames | Duration (sec) |
-| :-----: | :----------: | :----: | :------------: |
-|    1    |    307.9     |   981  |      19.6      |
-|    2    |    307.0     |   972  |      19.4      |
-|    3    |    307.1     |   990  |      19.8      |
-|    4    |     94.2     |   750  |      15.0      |
-|    5    |    308.8     |   958  |      19.2      |
+## Measurement Phase
 
-Table: Evaluation episode results. BipedalWalker-v3 runs at 50 FPS. Evaluation uses deterministic rollouts (action = policy mean, no sampling noise).
+To obtain a statistically reliable estimate, the policy is evaluated over **20 episodes** with seeds offset from the training seed (seeds 1042--1061). Results:
 
-Four of the five episodes achieve rewards above 300, with the best at 308.8. Episode 4 represents a failure case where the walker loses balance and falls. The four successful episodes (1, 2, 3, 5) demonstrate consistent performance above the task's solve threshold of 300. Episodes 1--3 were concatenated into a single ~59-second submission video using ffmpeg.
+| Metric                           | Value           |
+| :------------------------------- | :-------------- |
+| Mean reward                      | **252.27**      |
+| Std deviation                    | 112.96          |
+| Min / Max                        | −45.59 / 309.10 |
+| Success rate (reward $\geq$ 200) | **16 / 20**     |
 
-The learned gait achieves high reward through a characteristic one-leg hopping strategy, where the robot primarily uses one leg to push forward while the other serves for balance. Although this is not the intended bipedal walking gait, it is a valid local optimum in this environment — the reward function incentivizes forward progress, which hopping can achieve efficiently.
+Table: 20-episode measurement statistics. Deterministic rollouts, seeds independent of training.
+
+The policy succeeds (reward $\geq 200$) in 16 of 20 episodes, with a mean reward of 252.27. The high standard deviation reflects the bimodal nature of this task: episodes end either near 300 (successful walk) or near $-100$ (early fall), with few intermediate outcomes.
+
+## Video Phase
+
+Five additional episodes were recorded for the submission video (seeds 42--46); four achieved rewards above 300. Episodes 1--3 were concatenated into a single ~59-second submission video using ffmpeg.
+
+The learned gait achieves high reward through a characteristic one-leg hopping strategy, where the robot primarily uses one leg to push forward while the other serves for balance. Although this is not the intended bipedal walking gait, it is a valid local optimum in this environment, the reward function incentivizes forward progress, which hopping can achieve efficiently.
 
 \newpage
 
@@ -200,4 +209,4 @@ This will:
 python code.py --eval-only
 ```
 
-Loads `agent.pth` from a prior training run and records evaluation videos only.
+Loads `agent.pth` from a prior training run. Runs a **20-episode measurement phase** (no video) and prints mean ± std, min/max, and success rate, then records 5 video episodes to `video/`.
