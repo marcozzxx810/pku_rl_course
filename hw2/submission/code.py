@@ -13,6 +13,7 @@ MAX_GRAD_NORM   = 0.5
 HIDDEN_DIM      = 256
 SEED            = 42
 EVAL_EPISODES   = 5   # episodes to record for the video
+N_EVAL_EPISODES = 20  # episodes for proper measurement (no video)
 
 import os
 import random
@@ -50,7 +51,7 @@ class Actor(nn.Module):
 
     def forward(self, x):
         features = self.net(x)
-        mean = torch.tanh(self.mean_head(features))
+        mean = self.mean_head(features)
         std  = self.log_std.exp().expand_as(mean)
         return mean, std
 
@@ -134,12 +135,13 @@ class PPOAgent:
     def select_action(self, state, deterministic=False):
         state_t = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         dist    = self.actor.get_dist(state_t)
-        action  = dist.mean if deterministic else dist.sample()
-        action  = action.clamp(-1.0, 1.0)
-        log_prob = dist.log_prob(action).sum(-1)
+        raw_action = dist.mean if deterministic else dist.sample()
+        action  = torch.tanh(raw_action)
+        log_prob = dist.log_prob(raw_action).sum(-1)
         value   = self.critic(state_t)
         return (
             action.squeeze(0).cpu().numpy(),
+            raw_action.squeeze(0).cpu().numpy(),
             log_prob.item(),
             value.item(),
         )
@@ -211,11 +213,11 @@ def train():
     while total_steps < TOTAL_TIMESTEPS:
         buffer.clear()
         for _ in range(ROLLOUT_STEPS):
-            action, log_prob, value = agent.select_action(state)
+            action, raw_action, log_prob, value = agent.select_action(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
 
-            buffer.add(state, action, log_prob, reward, float(done), value)
+            buffer.add(state, raw_action, log_prob, reward, float(done), value)
             state = next_state
             ep_reward += reward
             total_steps += 1
@@ -274,6 +276,27 @@ def plot_rewards(episode_rewards):
 
 def evaluate_and_record(agent):
     device = agent.device
+
+    # === Measurement phase (no video, proper statistics) ===
+    measure_env = gym.make("BipedalWalker-v3")
+    rewards = []
+    for i in range(N_EVAL_EPISODES):
+        state, _ = measure_env.reset(seed=SEED + 1000 + i)
+        done = False
+        ep_reward = 0.0
+        while not done:
+            action, _, _, _ = agent.select_action(state, deterministic=True)
+            state, reward, terminated, truncated, _ = measure_env.step(action)
+            done = terminated or truncated
+            ep_reward += reward
+        rewards.append(ep_reward)
+    measure_env.close()
+    arr = np.array(rewards)
+    successes = int((arr >= 200).sum())
+    print(f"Eval over {N_EVAL_EPISODES} eps: mean={arr.mean():.2f} ± {arr.std():.2f}, "
+          f"min={arr.min():.2f}, max={arr.max():.2f}, success(>=200)={successes}/{N_EVAL_EPISODES}")
+
+    # === Video phase ===
     video_dir = os.path.join(SUBMISSION_DIR, "video")
     os.makedirs(video_dir, exist_ok=True)
 
@@ -293,14 +316,14 @@ def evaluate_and_record(agent):
         ep_frames = 0
         ep_reward = 0.0
         while not done:
-            action, _, _ = agent.select_action(state, deterministic=True)
+            action, _, _, _ = agent.select_action(state, deterministic=True)
             state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
             ep_reward += reward
             ep_frames += 1
         total_frames += ep_frames
         ep += 1
-        print(f"Eval episode {ep}: reward={ep_reward:.2f}, frames={ep_frames}")
+        print(f"Video episode {ep}: reward={ep_reward:.2f}, frames={ep_frames}")
 
     env.close()
     print(f"Video(s) saved to {video_dir}  (total frames: {total_frames})")
