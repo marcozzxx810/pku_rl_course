@@ -40,6 +40,17 @@ def set_seed(seed):
 # === Neural Networks ===
 
 class Actor(nn.Module):
+    """Tanh-squashed diagonal Gaussian policy.
+
+    The network outputs an *unsquashed* mean in R^act_dim; we sample a pre-tanh
+    variable u ~ Normal(mean, std) and the environment action is a = tanh(u),
+    guaranteed to lie in (-1, 1). The log-probability of a includes the tanh
+    Jacobian correction:
+        log pi(a|s) = log N(u | mean, std) - sum_i log(1 - tanh(u_i)^2)
+    """
+    LOG_STD_MIN = -5.0
+    LOG_STD_MAX = 2.0
+
     def __init__(self, obs_dim, act_dim, hidden_dim):
         super().__init__()
         self.net = nn.Sequential(
@@ -51,13 +62,47 @@ class Actor(nn.Module):
 
     def forward(self, x):
         features = self.net(x)
-        mean = torch.tanh(self.mean_head(features))
-        std  = self.log_std.exp().expand_as(mean)
+        mean = self.mean_head(features)                # unsquashed
+        log_std = self.log_std.clamp(self.LOG_STD_MIN, self.LOG_STD_MAX)
+        std = log_std.exp().expand_as(mean)
         return mean, std
 
-    def get_dist(self, x):
+    def _dist(self, x):
         mean, std = self.forward(x)
         return Normal(mean, std)
+
+    def sample(self, x):
+        """Draw a stochastic action. Returns (u, action, log_prob).
+
+        u is the pre-tanh Gaussian sample (stored in the rollout buffer so the
+        update step can recompute log-probabilities exactly); action = tanh(u)
+        is what gets sent to the environment.
+        """
+        dist = self._dist(x)
+        u = dist.sample()
+        action = torch.tanh(u)
+        log_prob = dist.log_prob(u).sum(-1) \
+                   - torch.log(1 - action.pow(2) + 1e-6).sum(-1)
+        return u, action, log_prob
+
+    def log_prob_from_u(self, x, u):
+        """Recompute log pi(a|s) and a regularizer entropy given stored u.
+
+        Used during PPO updates. Entropy is the base Gaussian entropy (the
+        tanh-squashed distribution has no closed-form entropy); this still
+        works fine as an exploration bonus.
+        """
+        dist = self._dist(x)
+        action = torch.tanh(u)
+        log_prob = dist.log_prob(u).sum(-1) \
+                   - torch.log(1 - action.pow(2) + 1e-6).sum(-1)
+        entropy = dist.entropy().sum(-1)
+        return log_prob, entropy
+
+    def deterministic_action(self, x):
+        """Zero-noise action used for evaluation: tanh(mean)."""
+        mean, _ = self.forward(x)
+        return torch.tanh(mean)
 
 
 class Critic(nn.Module):
@@ -133,13 +178,20 @@ class PPOAgent:
 
     @torch.no_grad()
     def select_action(self, state, deterministic=False):
+        """Return (env_action, pre_tanh_u, log_prob, value).
+
+        In deterministic mode pre_tanh_u and log_prob are None (not needed).
+        env_action is always in (-1, 1) via tanh.
+        """
         state_t = torch.FloatTensor(state).unsqueeze(0).to(self.device)
-        dist    = self.actor.get_dist(state_t)
-        action  = dist.mean if deterministic else dist.sample()
-        log_prob = dist.log_prob(action).sum(-1)
-        value   = self.critic(state_t)
+        if deterministic:
+            action = self.actor.deterministic_action(state_t)
+            return action.squeeze(0).cpu().numpy(), None, None, None
+        u, action, log_prob = self.actor.sample(state_t)
+        value = self.critic(state_t)
         return (
             action.squeeze(0).cpu().numpy(),
+            u.squeeze(0).cpu().numpy(),
             log_prob.item(),
             value.item(),
         )
@@ -167,10 +219,10 @@ class PPOAgent:
                 # Normalize advantages within minibatch
                 mb_adv = (mb_adv - mb_adv.mean()) / (mb_adv.std() + 1e-8)
 
-                dist     = self.actor.get_dist(mb_states)
-                new_lp   = dist.log_prob(mb_actions).sum(-1)
-                entropy  = dist.entropy().sum(-1).mean()
-                values   = self.critic(mb_states)
+                # mb_actions holds pre-tanh u; recompute log π with tanh correction
+                new_lp, ent_per_sample = self.actor.log_prob_from_u(mb_states, mb_actions)
+                entropy = ent_per_sample.mean()
+                values  = self.critic(mb_states)
 
                 ratio    = (new_lp - mb_old_lp).exp()
                 surr1    = ratio * mb_adv
@@ -194,7 +246,7 @@ class PPOAgent:
 def train():
     set_seed(SEED)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device: {device}")
+    print(f"Device: {device}", flush=True)
 
     env = gym.make("BipedalWalker-v3")
     obs_dim = env.observation_space.shape[0]
@@ -208,11 +260,17 @@ def train():
     state, _ = env.reset(seed=SEED)
     total_steps = 0
 
+    best_ma      = float("-inf")
+    best_path    = os.path.join(SUBMISSION_DIR, "best_agent.pth")
+    final_path   = os.path.join(SUBMISSION_DIR, "agent.pth")
+
     while total_steps < TOTAL_TIMESTEPS:
         buffer.clear()
         for _ in range(ROLLOUT_STEPS):
-            action, log_prob, value = agent.select_action(state)
-            next_state, reward, terminated, truncated, _ = env.step(np.clip(action, -1.0, 1.0))
+            # select_action returns (env_action, pre_tanh_u, log_prob, value)
+            env_action, u, log_prob, value = agent.select_action(state)
+            # env_action = tanh(u) is already in (-1, 1); no clip needed
+            next_state, reward, terminated, truncated, _ = env.step(env_action)
             done = terminated or truncated
 
             # On time-limit truncation (not a real terminal), fold V(next_state)
@@ -225,7 +283,8 @@ def train():
                     bootstrap_v = agent.critic(next_state_t).item()
                 buffer_reward = reward + GAMMA * bootstrap_v
 
-            buffer.add(state, action, log_prob, buffer_reward, float(done), value)
+            # Store pre-tanh u so update() can recompute log π with Jacobian correction
+            buffer.add(state, u, log_prob, buffer_reward, float(done), value)
             state = next_state
             ep_reward += reward       # log the raw env reward, not the bootstrap-adjusted one
             total_steps += 1
@@ -244,17 +303,22 @@ def train():
         if episode_rewards:
             recent = np.mean(episode_rewards[-10:])
             print(f"Steps: {total_steps:>8d} | Episodes: {len(episode_rewards):>5d} | "
-                  f"Avg reward (last 10): {recent:>8.2f}")
+                  f"Avg reward (last 10): {recent:>8.2f}", flush=True)
+
+            # Save best checkpoint whenever the 10-ep moving average improves
+            if len(episode_rewards) >= 10 and recent > best_ma:
+                best_ma = recent
+                torch.save({"actor": agent.actor.state_dict(),
+                            "critic": agent.critic.state_dict()}, best_path)
+                print(f"  ** New best moving-avg {best_ma:.2f} — saved {best_path}")
 
     env.close()
-    print("Training complete.")
+    print("Training complete.", flush=True)
 
-    weights_path = os.path.join(SUBMISSION_DIR, "agent.pth")
-    torch.save({
-        "actor":  agent.actor.state_dict(),
-        "critic": agent.critic.state_dict(),
-    }, weights_path)
-    print(f"Weights saved to {weights_path}")
+    torch.save({"actor": agent.actor.state_dict(),
+                "critic": agent.critic.state_dict()}, final_path)
+    print(f"Final weights saved to {final_path}")
+    print(f"Best weights (avg {best_ma:.2f}) saved to {best_path}")
 
     return agent, episode_rewards
 
@@ -293,7 +357,7 @@ def evaluate_and_record(agent):
         done = False
         ep_reward = 0.0
         while not done:
-            action, _, _ = agent.select_action(state, deterministic=True)
+            action, *_ = agent.select_action(state, deterministic=True)
             state, reward, terminated, truncated, _ = measure_env.step(action)
             done = terminated or truncated
             ep_reward += reward
@@ -324,7 +388,7 @@ def evaluate_and_record(agent):
         ep_frames = 0
         ep_reward = 0.0
         while not done:
-            action, _, _ = agent.select_action(state, deterministic=True)
+            action, *_ = agent.select_action(state, deterministic=True)
             state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
             ep_reward += reward
@@ -347,20 +411,34 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    weights_path = os.path.join(SUBMISSION_DIR, "agent.pth")
+
+    best_path  = os.path.join(SUBMISSION_DIR, "best_agent.pth")
+    final_path = os.path.join(SUBMISSION_DIR, "agent.pth")
+
+    def load_best_agent(obs_dim, act_dim):
+        """Load best_agent.pth if available, else fall back to agent.pth."""
+        agent = PPOAgent(obs_dim, act_dim, device)
+        path = best_path if os.path.exists(best_path) else final_path
+        checkpoint = torch.load(path, map_location=device, weights_only=True)
+        agent.actor.load_state_dict(checkpoint["actor"])
+        agent.critic.load_state_dict(checkpoint["critic"])
+        print(f"Loaded weights from {path}")
+        return agent
 
     if args.eval_only:
         base_env = gym.make("BipedalWalker-v3")
         obs_dim = base_env.observation_space.shape[0]
         act_dim = base_env.action_space.shape[0]
         base_env.close()
-        agent = PPOAgent(obs_dim, act_dim, device)
-        checkpoint = torch.load(weights_path, map_location=device, weights_only=True)
-        agent.actor.load_state_dict(checkpoint["actor"])
-        agent.critic.load_state_dict(checkpoint["critic"])
-        print(f"Loaded weights from {weights_path}")
+        agent = load_best_agent(obs_dim, act_dim)
         evaluate_and_record(agent)
     else:
         agent, episode_rewards = train()
         plot_rewards(episode_rewards)
-        evaluate_and_record(agent)
+        # Reload best checkpoint for evaluation (may differ from end-of-training weights)
+        env_tmp = gym.make("BipedalWalker-v3")
+        obs_dim = env_tmp.observation_space.shape[0]
+        act_dim = env_tmp.action_space.shape[0]
+        env_tmp.close()
+        best_agent = load_best_agent(obs_dim, act_dim)
+        evaluate_and_record(best_agent)

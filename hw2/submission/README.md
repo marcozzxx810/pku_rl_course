@@ -2,14 +2,14 @@
 
 ## Requirements
 
-* Python >= 3.8 (recommended: 3.10)
-* pip (latest)
+- Python 3.10+
+- pip (latest)
 
 Intended to support:
 
-* Linux (Ubuntu 22.04)
-* macOS
-* Windows 11
+- Linux (Ubuntu 22.04)
+- macOS
+- Windows 11
 
 ---
 
@@ -18,7 +18,7 @@ Intended to support:
 ### Option 1: Conda (recommended)
 
 ```bash
-conda create -n rl_hw2 python=3.10 -y
+conda create -n rl_hw2 python=3.10 -y  # Python 3.10 required
 conda activate rl_hw2
 
 pip install --upgrade pip
@@ -33,13 +33,13 @@ python -m venv rl_hw2_env
 
 Activate:
 
-* Linux / macOS:
+- Linux / macOS:
 
 ```bash
 source rl_hw2_env/bin/activate
 ```
 
-* Windows:
+- Windows:
 
 ```bash
 rl_hw2_env\Scripts\activate
@@ -62,14 +62,26 @@ pip install "gymnasium[box2d]" "gymnasium[other]" matplotlib numpy torch
 python code.py
 ```
 
-Trains for 2M timesteps, then records evaluation episodes.
+Trains for 2M timesteps, saves `best_agent.pth` / `agent.pth`, plots the reward curve, and records 5 evaluation episodes to `video/`.
 
 ### Evaluate only
 
-Requires `agent.pth` from a prior training run.
+Requires `best_agent.pth` (or `agent.pth` as fallback) from a prior training run.
 
 ```bash
 python code.py --eval-only
+```
+
+Records 5 episodes to `video/eval-episode-*.mp4`.
+
+### Build the submission video
+
+Concatenate the per-episode recordings into a single `eval_video.mp4`:
+
+```bash
+printf "file 'video/eval-episode-%d.mp4'\n" 0 1 2 3 4 > _concat.txt
+ffmpeg -y -f concat -safe 0 -i _concat.txt -c copy eval_video.mp4
+rm _concat.txt
 ```
 
 ---
@@ -79,11 +91,10 @@ python code.py --eval-only
 ```
 .
 ├── code.py
-├── agent.pth
+├── best_agent.pth       # best checkpoint (by 10-ep moving avg)
+├── agent.pth            # final-step checkpoint
 ├── reward_curve.png
 ├── eval_video.mp4
-├── video/
-│   └── eval-episode-*.mp4
 ├── report.pdf
 └── README.md
 ```
@@ -96,27 +107,28 @@ python code.py --eval-only
 
 Install system dependencies:
 
-* Ubuntu:
+- Ubuntu:
 
 ```bash
 sudo apt-get install swig build-essential python3-dev
 ```
 
-* macOS:
+- macOS:
 
 ```bash
 brew install swig
 ```
 
-* **Windows:**
-Box2D requires C++ compilation, which often fails on Windows without the right tools.
-  * **If using Conda (Recommended):** Install SWIG directly through Conda before installing Box2D:
+- **Windows:**
+  Box2D requires C++ compilation, which often fails on Windows without the right tools.
+  - **If using Conda (Recommended):** Install SWIG directly through Conda before installing Box2D:
     ```bash
     conda install swig
     ```
-  * **If using venv:** You need to install the **Microsoft C++ Build Tools**. Download it from the official Microsoft website, run the installer, and make sure to check the box for **"Desktop development with C++"**.
+  - **If using venv:** You need to install the **Microsoft C++ Build Tools**. Download it from the official Microsoft website, run the installer, and make sure to check the box for **"Desktop development with C++"**.
 
 **After installing the dependencies, try reinstalling:**
+
 ```bash
 pip install "gymnasium[box2d]"
 ```
@@ -125,13 +137,13 @@ pip install "gymnasium[box2d]"
 
 ## Results
 
-| Algorithm | Avg reward (eval) |
-|-----------|-------------------|
-| PPO       | ~297              |
+| Algorithm | Avg reward (20 eps, det.) | Success (≥200) |
+| --------- | ------------------------- | -------------- |
+| PPO       | 262.52 ± 58.30            | 17 / 20        |
 
 ---
 
 ## Notes
 
-* No GPU is required
-* Recommended Python version: 3.10 for best compatibility
+- No GPU is required
+- Python 3.10 is required
