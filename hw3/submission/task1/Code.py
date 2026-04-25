@@ -55,13 +55,18 @@ FALL_PENALTY          = 5.0
 
 # Evaluation / video
 N_EVAL_EPISODES       = 10
+CHECKPOINT_EVAL_INTERVAL = 5
+CHECKPOINT_EVAL_EPISODES = 3
+CHECKPOINT_EVAL_SEED_OFFSET = 3000
 EVAL_VIDEO_EPISODES   = 2     # ~50 s each at 20 fps
 VIDEO_FPS             = 20
 VIDEO_MAX_FRAMES      = None
+MIN_VIDEO_SECONDS     = 30.0
 
 import os
 import sys
 import argparse
+import math
 import random
 import time
 from pathlib import Path
@@ -97,9 +102,12 @@ _SMOKE = dict(
     MPC_CEM_ITERS=1,
     MPC_NUM_ELITES=10,
     MAX_EPISODE_STEPS=20,
+    CHECKPOINT_EVAL_INTERVAL=1,
+    CHECKPOINT_EVAL_EPISODES=2,
     EVAL_VIDEO_EPISODES=1,
     N_EVAL_EPISODES=2,
     VIDEO_MAX_FRAMES=20,
+    MIN_VIDEO_SECONDS=0.0,
 )
 
 
@@ -135,6 +143,8 @@ class Tee:
 
 def set_seed(seed: int):
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 
 # =============================================================================
@@ -489,15 +499,20 @@ def _smooth(x: List[float], w: int) -> np.ndarray:
 
 def plot_rewards(returns: List[float], out: Path, smooth: int = 5):
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(returns, alpha=0.35, color="steelblue", label="Episode return")
+    ax.plot(returns, marker="o", markersize=4, linewidth=1.2,
+            alpha=0.75, color="steelblue", label="Raw episode return")
     ma = _smooth(returns, smooth)
     if len(returns) >= smooth:
         ax.plot(range(smooth - 1, len(returns)), ma,
-                color="steelblue", lw=2, label=f"{smooth}-ep moving avg")
-    ax.set_xlabel("Episode"); ax.set_ylabel("Return")
+                color="darkorange", lw=2, label=f"{smooth}-episode moving average")
+    ax.set_xlabel("Episode")
+    ax.set_ylabel("Return")
     ax.set_title("MBRL v1.5 — HalfCheetah-v5 Training Reward")
-    ax.legend(); ax.grid(alpha=0.3)
-    fig.tight_layout(); fig.savefig(str(out), dpi=150); plt.close(fig)
+    ax.legend()
+    ax.grid(True)
+    fig.tight_layout()
+    fig.savefig(str(out), dpi=150)
+    plt.close(fig)
     print(f"Saved: {out}", flush=True)
 
 
@@ -538,6 +553,70 @@ def save_all_curves(history: Dict, plots_dir: Path):
 
 
 # =============================================================================
+# Deterministic evaluation for checkpoint selection
+# =============================================================================
+def _capture_rng_state():
+    cuda_state = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
+    return random.getstate(), np.random.get_state(), torch.random.get_rng_state(), cuda_state
+
+
+def _restore_rng_state(state):
+    py_state, np_state, torch_state, cuda_state = state
+    random.setstate(py_state)
+    np.random.set_state(np_state)
+    torch.random.set_rng_state(torch_state)
+    if cuda_state is not None and torch.cuda.is_available():
+        torch.cuda.set_rng_state_all(cuda_state)
+
+
+def _should_run_checkpoint_eval(iteration: int) -> bool:
+    return (iteration % CHECKPOINT_EVAL_INTERVAL == 0 or
+            iteration == NUM_ITERATIONS)
+
+
+@torch.no_grad()
+def evaluate_policy(model, obs_norm, delta_norm, device,
+                    n_episodes: int,
+                    seed_offset: int,
+                    label: str,
+                    deterministic: bool = True) -> List[float]:
+    print(f"\n[{label}] Running {n_episodes} deterministic episode(s)...", flush=True)
+    saved_rng = _capture_rng_state() if deterministic else None
+    action_low_t, action_high_t = _action_bounds_tensors(device)
+    rewards: List[float] = []
+    env = make_env()
+    model.eval()
+    try:
+        for i in range(n_episodes):
+            ep_seed = SEED + seed_offset + i
+            if deterministic:
+                set_seed(ep_seed)
+            obs, _ = env.reset(seed=ep_seed)
+            done = False
+            ep_ret = 0.0
+            while not done:
+                act = mpc_action_cem(obs, model, obs_norm, delta_norm, device,
+                                     action_low_t, action_high_t,
+                                     planning_score_fn=planning_objective)
+                act = _clip_action(act)
+                obs, rew, term, trunc, _ = env.step(act)
+                done = term or trunc
+                ep_ret += rew
+            rewards.append(ep_ret)
+            print(f"  {label} ep {i+1}: return={ep_ret:.2f}", flush=True)
+    finally:
+        env.close()
+        if saved_rng is not None:
+            _restore_rng_state(saved_rng)
+
+    if rewards:
+        arr = np.array(rewards)
+        print(f"{label}: mean={arr.mean():.2f} +/- {arr.std():.2f}, "
+              f"min={arr.min():.2f}, max={arr.max():.2f}", flush=True)
+    return rewards
+
+
+# =============================================================================
 # Training
 # =============================================================================
 def train():
@@ -557,8 +636,30 @@ def train():
     optimizer  = optim.Adam(model.parameters(), lr=MODEL_LR, weight_decay=MODEL_WEIGHT_DECAY)
 
     history: Dict = dict(all_returns=[], train_losses_flat=[],
-                         val_mses=[], rollout_errs=[])
-    best_val_mse = float("inf")
+                         val_mses=[], rollout_errs=[],
+                         eval_iters=[], eval_mean_returns=[])
+    best_eval_return = -float("inf")
+
+    def run_checkpoint_eval(tag: str, iteration: int):
+        nonlocal best_eval_return
+        eval_rets = evaluate_policy(model, obs_norm, delta_norm, device,
+                                    CHECKPOINT_EVAL_EPISODES,
+                                    CHECKPOINT_EVAL_SEED_OFFSET,
+                                    tag,
+                                    deterministic=True)
+        if not eval_rets:
+            return
+        eval_mean = float(np.mean(eval_rets))
+        history["eval_iters"].append(iteration)
+        history["eval_mean_returns"].append(eval_mean)
+        if eval_mean > best_eval_return:
+            best_eval_return = eval_mean
+            print(f"  ** New best eval_mean_return={best_eval_return:.2f}; "
+                  f"saving best checkpoint", flush=True)
+            save_checkpoint(model, obs_norm, delta_norm, BEST_CKPT_PATH)
+        else:
+            print(f"  Best eval_mean_return remains {best_eval_return:.2f}",
+                  flush=True)
 
     # ---- Phase 0: random data collection ----
     print(f"\n[Phase 0] Collecting {INIT_RANDOM_STEPS} random transitions...", flush=True)
@@ -581,11 +682,8 @@ def train():
         history["val_mses"].append(val_mse)
         print(f"  Model: last_train_loss={train_losses[-1]:.4f}  val_mse={val_mse:.6f}",
               flush=True)
-        if val_mse < best_val_mse:
-            best_val_mse = val_mse
-            print(f"  ** New best val_mse={best_val_mse:.6f}; saving best checkpoint",
-                  flush=True)
-            save_checkpoint(model, obs_norm, delta_norm, BEST_CKPT_PATH)
+        if _should_run_checkpoint_eval(it + 1):
+            run_checkpoint_eval(f"Checkpoint eval iter {it+1}", it + 1)
 
         print(f"  CEM MPC collecting {STEPS_PER_ITER} steps "
               f"(H={MPC_HORIZON}, K={MPC_NUM_CANDIDATES}, "
@@ -608,11 +706,8 @@ def train():
     print(f"\n[Final retrain] buffer={buffer.size} transitions", flush=True)
     _, final_val_mse = train_model(model, optimizer, buffer,
                                    obs_norm, delta_norm, device)
-    if final_val_mse < best_val_mse:
-        best_val_mse = final_val_mse
-        print(f"  ** New best val_mse={best_val_mse:.6f}; saving best checkpoint",
-              flush=True)
-        save_checkpoint(model, obs_norm, delta_norm, BEST_CKPT_PATH)
+    print(f"  Final retrain val_mse={final_val_mse:.6f}", flush=True)
+    run_checkpoint_eval("Final checkpoint eval", NUM_ITERATIONS + 1)
     save_checkpoint(model, obs_norm, delta_norm, CKPT_PATH)
 
     # ---- Plots ----
@@ -627,35 +722,24 @@ def train():
 # Evaluation + video recording (mirrors hw2 split: measurement + video)
 # =============================================================================
 def evaluate_and_record(model, obs_norm, delta_norm, device):
-    print(f"\n[Eval] Running {N_EVAL_EPISODES} measurement episodes...", flush=True)
-    action_low_t, action_high_t = _action_bounds_tensors(device)
-    env = make_env()
-    rewards: List[float] = []
-    for i in range(N_EVAL_EPISODES):
-        obs, _ = env.reset(seed=SEED + 1000 + i)
-        done = False
-        ep_ret = 0.0
-        while not done:
-            act = mpc_action_cem(obs, model, obs_norm, delta_norm, device,
-                                 action_low_t, action_high_t,
-                                 planning_score_fn=planning_objective)
-            act = _clip_action(act)
-            obs, rew, term, trunc, _ = env.step(act)
-            done = term or trunc
-            ep_ret += rew
-        rewards.append(ep_ret)
-        print(f"  Eval ep {i+1}: return={ep_ret:.2f}", flush=True)
-    env.close()
-    if rewards:
-        arr = np.array(rewards)
-        print(f"Eval over {len(rewards)} eps: mean={arr.mean():.2f} ± {arr.std():.2f}, "
-              f"min={arr.min():.2f}, max={arr.max():.2f}", flush=True)
+    rewards = evaluate_policy(model, obs_norm, delta_norm, device,
+                              N_EVAL_EPISODES,
+                              1000,
+                              "Eval",
+                              deterministic=True)
 
-    print(f"\n[Video] Recording {EVAL_VIDEO_EPISODES} episode(s)...", flush=True)
+    action_low_t, action_high_t = _action_bounds_tensors(device)
+
+    min_frames = int(math.ceil(MIN_VIDEO_SECONDS * VIDEO_FPS))
+    print(f"\n[Video] Recording at least {EVAL_VIDEO_EPISODES} episode(s) "
+          f"and {MIN_VIDEO_SECONDS:.1f}s...", flush=True)
     env = make_env(render_mode="rgb_array")
     frames: List[np.ndarray] = []
-    for ep in range(EVAL_VIDEO_EPISODES):
-        obs, _ = env.reset(seed=SEED + 200 + ep)
+    ep = 0
+    while ep < EVAL_VIDEO_EPISODES or len(frames) < min_frames:
+        ep_seed = SEED + 200 + ep
+        set_seed(ep_seed)
+        obs, _ = env.reset(seed=ep_seed)
         done = False
         ep_ret = 0.0
         ep_frames = 0
@@ -672,6 +756,9 @@ def evaluate_and_record(model, obs_norm, delta_norm, device):
             if VIDEO_MAX_FRAMES is not None and ep_frames >= VIDEO_MAX_FRAMES:
                 break
         print(f"  Video ep {ep+1}: return={ep_ret:.2f}, frames={ep_frames}", flush=True)
+        ep += 1
+        if ep_frames == 0:
+            break
     env.close()
 
     out_path = SUBMISSION_DIR / "Video.mp4"
@@ -686,8 +773,9 @@ def evaluate_and_record(model, obs_norm, delta_norm, device):
 
     duration = len(frames) / VIDEO_FPS
     print(f"Video: {out_path} ({len(frames)} frames, {duration:.1f}s)", flush=True)
-    if duration < 30.0:
-        print(f"WARNING: video is {duration:.1f}s (< 30 s)", flush=True)
+    if MIN_VIDEO_SECONDS > 0 and duration < MIN_VIDEO_SECONDS:
+        raise RuntimeError(f"Video duration is {duration:.1f}s; expected "
+                           f"at least {MIN_VIDEO_SECONDS:.1f}s")
     return rewards, duration
 
 
@@ -707,11 +795,14 @@ def main():
     SUBMISSION_DIR.mkdir(parents=True, exist_ok=True)
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Tee stdout/stderr to train.log inside task1/
-    log_file = open(LOG_PATH, "w", buffering=1)
+    # Tee stdout/stderr to train.log inside task1/. Eval-only appends so it
+    # does not erase the training evidence used to select best_agent.pth.
+    log_mode = "a" if args.eval_only else "w"
+    log_file = open(LOG_PATH, log_mode, buffering=1)
     sys.stdout = Tee(sys.__stdout__, log_file)
     sys.stderr = Tee(sys.__stderr__, log_file)
     print(f"=== Run started at {time.strftime('%Y-%m-%d %H:%M:%S')} ===", flush=True)
+    print(f"train.log mode: {log_mode}", flush=True)
     print(f"args: {vars(args)}", flush=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
