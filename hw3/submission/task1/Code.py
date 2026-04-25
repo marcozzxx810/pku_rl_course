@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 Model-Based RL v1.5 for HalfCheetah-v5
-Algorithm: MBRL v1.5 — iterative data aggregation with random-shooting MPC
+Algorithm: MBRL v1.5 — iterative data aggregation with CEM MPC
   1. Collect initial data with a random policy
   2. For each iteration:
      a. Train a learned dynamics model f(s,a)->Δs on all collected data
-     b. Execute MPC (random shooting) in the real environment
+     b. Execute CEM MPC in the real environment
   3. Save checkpoint, reward plot, diagnostics, and a video of the trained agent
 
 Dependencies: gymnasium[mujoco] torch numpy matplotlib imageio imageio-ffmpeg
@@ -16,14 +16,17 @@ SEED                  = 42
 
 # Environment
 ENV_ID                = "HalfCheetah-v5"
-OBS_DIM               = 18    # exclude_current_positions_from_observation=False
-ACT_DIM               = 6
+OBS_DIM               = None
+ACT_DIM               = None
+ACTION_LOW            = None
+ACTION_HIGH           = None
+MAX_EPISODE_STEPS     = None
 DT                    = 0.05  # frame_skip * timestep = 5 * 0.01
 CTRL_COST_WEIGHT      = 0.1
 
 # Data collection
 INIT_RANDOM_STEPS     = 5000
-NUM_ITERATIONS        = 15
+NUM_ITERATIONS        = 40
 STEPS_PER_ITER        = 1000
 
 # Dynamics model
@@ -35,14 +38,20 @@ MODEL_BATCH_SIZE      = 256
 MODEL_EPOCHS_PER_ITER = 40
 VAL_FRACTION          = 0.1
 
-# MPC (random shooting)
+# CEM MPC
 MPC_HORIZON           = 15
 MPC_NUM_CANDIDATES    = 500
+MPC_CEM_ITERS         = 3
+MPC_NUM_ELITES        = 50
+MPC_INIT_STD          = 1.0
+MPC_MIN_STD           = 0.05
+UPRIGHT_BONUS_WEIGHT  = 0.05
 
 # Evaluation / video
 N_EVAL_EPISODES       = 10
 EVAL_VIDEO_EPISODES   = 2     # ~50 s each at 20 fps
 VIDEO_FPS             = 20
+VIDEO_MAX_FRAMES      = None
 
 import os
 import sys
@@ -50,7 +59,7 @@ import argparse
 import random
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -65,6 +74,7 @@ import imageio
 SUBMISSION_DIR = Path(__file__).parent
 PLOTS_DIR      = SUBMISSION_DIR / "plots"
 CKPT_PATH      = SUBMISSION_DIR / "agent.pth"
+BEST_CKPT_PATH = SUBMISSION_DIR / "best_agent.pth"
 LOG_PATH       = SUBMISSION_DIR / "train.log"
 
 
@@ -78,8 +88,12 @@ _SMOKE = dict(
     MODEL_EPOCHS_PER_ITER=5,
     MPC_NUM_CANDIDATES=100,
     MPC_HORIZON=5,
+    MPC_CEM_ITERS=1,
+    MPC_NUM_ELITES=10,
+    MAX_EPISODE_STEPS=20,
     EVAL_VIDEO_EPISODES=1,
     N_EVAL_EPISODES=2,
+    VIDEO_MAX_FRAMES=20,
 )
 
 
@@ -189,34 +203,72 @@ class DynamicsModel(nn.Module):
 
 
 # =============================================================================
-# Analytic reward — obs[9] is rootx velocity (the x-velocity of the torso)
+# HW3-spec analytic reward
 # =============================================================================
 def compute_reward_torch(s, a, s_next):
-    forward_reward = s_next[..., 9]
+    # obs[0] is the torso x-position because the env includes current positions.
+    forward_reward = (s_next[..., 0] - s[..., 0]) / DT
     ctrl_cost      = CTRL_COST_WEIGHT * (a ** 2).sum(dim=-1)
     return forward_reward - ctrl_cost
 
 
+def planning_objective(s, a, s_next):
+    base = compute_reward_torch(s, a, s_next)
+    upright_bonus = -UPRIGHT_BONUS_WEIGHT * (s_next[..., 2] ** 2)
+    return base + upright_bonus
+
+
 # =============================================================================
-# MPC — random shooting, fully batched on torch
+# CEM MPC — fully batched on torch
 # =============================================================================
 @torch.no_grad()
-def mpc_action(state, model, obs_norm, delta_norm, device,
-               horizon: Optional[int] = None, n_candidates: Optional[int] = None):
+def mpc_action_cem(state, model, obs_norm, delta_norm, device,
+                   action_low_t, action_high_t,
+                   horizon: Optional[int] = None,
+                   n_candidates: Optional[int] = None,
+                   cem_iters: Optional[int] = None,
+                   n_elites: Optional[int] = None,
+                   planning_score_fn: Optional[Callable] = None):
+    """CEM MPC: sample action sequences, refit on elites, return the first action."""
+    if ACT_DIM is None:
+        raise RuntimeError("ACT_DIM is not initialized; call _detect_env_dims() first.")
+
     K = MPC_NUM_CANDIDATES if n_candidates is None else n_candidates
     H = MPC_HORIZON        if horizon      is None else horizon
-    s = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0).expand(K, -1)
-    acts = torch.rand(K, H, ACT_DIM, device=device) * 2.0 - 1.0
-    total_r = torch.zeros(K, device=device)
-    cur_s   = s.clone()
-    for h in range(H):
-        a = acts[:, h, :]
-        delta = delta_norm.unnorm(model(obs_norm.norm(cur_s), a))
-        next_s = cur_s + delta
-        total_r += compute_reward_torch(cur_s, a, next_s)
-        cur_s = next_s
-    best = total_r.argmax()
-    return acts[best, 0].cpu().numpy()
+    I = MPC_CEM_ITERS      if cem_iters    is None else cem_iters
+    E = MPC_NUM_ELITES     if n_elites     is None else n_elites
+    E = min(E, K)
+    score = planning_score_fn or compute_reward_torch
+
+    low = action_low_t.view(1, 1, -1)
+    high = action_high_t.view(1, 1, -1)
+    mid = (action_low_t + action_high_t) * 0.5
+    half = (action_high_t - action_low_t) * 0.5
+    mean = mid.expand(H, -1).clone()
+    std = (half * MPC_INIT_STD).expand(H, -1).clone()
+
+    s_init = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0).expand(K, -1)
+
+    for _ in range(I):
+        noise = torch.randn(K, H, ACT_DIM, device=device)
+        acts = mean.unsqueeze(0) + std.unsqueeze(0) * noise
+        acts = torch.max(torch.min(acts, high), low)
+
+        cur_s = s_init.clone()
+        total_r = torch.zeros(K, device=device)
+        for h in range(H):
+            a = acts[:, h, :]
+            delta = delta_norm.unnorm(model(obs_norm.norm(cur_s), a))
+            next_s = cur_s + delta
+            total_r += score(cur_s, a, next_s)
+            cur_s = next_s
+
+        _, elite_idx = torch.topk(total_r, E)
+        elites = acts[elite_idx]
+        mean = elites.mean(dim=0)
+        std = elites.std(dim=0, unbiased=False).clamp(min=MPC_MIN_STD)
+
+    return mean[0].cpu().numpy()
 
 
 # =============================================================================
@@ -266,14 +318,50 @@ def train_model(model, optimizer, buffer, obs_norm, delta_norm, device):
 # Environment helpers
 # =============================================================================
 def make_env(render_mode: Optional[str] = None) -> gym.Env:
-    return gym.make(
-        ENV_ID,
+    kwargs = dict(
         render_mode=render_mode,
         exclude_current_positions_from_observation=False,
     )
+    if MAX_EPISODE_STEPS is not None:
+        kwargs["max_episode_steps"] = MAX_EPISODE_STEPS
+    return gym.make(ENV_ID, **kwargs)
+
+
+def _detect_env_dims():
+    global OBS_DIM, ACT_DIM, ACTION_LOW, ACTION_HIGH
+    if (OBS_DIM is not None and ACT_DIM is not None and
+            ACTION_LOW is not None and ACTION_HIGH is not None):
+        return
+
+    env = make_env()
+    try:
+        OBS_DIM = int(env.observation_space.shape[0])
+        ACT_DIM = int(env.action_space.shape[0])
+        ACTION_LOW = env.action_space.low.astype(np.float32).copy()
+        ACTION_HIGH = env.action_space.high.astype(np.float32).copy()
+    finally:
+        env.close()
+
+
+def _action_bounds_tensors(device):
+    _detect_env_dims()
+    return (
+        torch.tensor(ACTION_LOW, dtype=torch.float32, device=device),
+        torch.tensor(ACTION_HIGH, dtype=torch.float32, device=device),
+    )
+
+
+def _clip_action(act):
+    _detect_env_dims()
+    return np.clip(act, ACTION_LOW, ACTION_HIGH)
+
+
+def _preferred_checkpoint_path() -> Path:
+    return BEST_CKPT_PATH if BEST_CKPT_PATH.exists() else CKPT_PATH
 
 
 def collect_random(env, n_steps: int) -> Tuple[ReplayBuffer, List[float]]:
+    _detect_env_dims()
     buf = ReplayBuffer(OBS_DIM, ACT_DIM)
     ep_returns: List[float] = []
     obs, _ = env.reset(seed=SEED)
@@ -299,12 +387,15 @@ def collect_random(env, n_steps: int) -> Tuple[ReplayBuffer, List[float]]:
 def run_mpc_iter(env, buffer, model, obs_norm, delta_norm, device):
     ep_returns: List[float] = []
     pred_errs:  List[float] = []
+    action_low_t, action_high_t = _action_bounds_tensors(device)
     obs, _ = env.reset()
     ep_ret = 0.0
     obsl, actl, nobsl, rewl, donel = [], [], [], [], []
     for _ in range(STEPS_PER_ITER):
-        act = mpc_action(obs, model, obs_norm, delta_norm, device)
-        act = np.clip(act, -1.0, 1.0)
+        act = mpc_action_cem(obs, model, obs_norm, delta_norm, device,
+                             action_low_t, action_high_t,
+                             planning_score_fn=planning_objective)
+        act = _clip_action(act)
         with torch.no_grad():
             st = torch.tensor(obs, dtype=torch.float32, device=device).unsqueeze(0)
             at = torch.tensor(act, dtype=torch.float32, device=device).unsqueeze(0)
@@ -329,6 +420,7 @@ def run_mpc_iter(env, buffer, model, obs_norm, delta_norm, device):
 # Checkpoint I/O
 # =============================================================================
 def save_checkpoint(model, obs_norm, delta_norm, path: Path):
+    _detect_env_dims()
     torch.save({
         "model":      model.state_dict(),
         "obs_mean":   obs_norm.mean.detach().cpu(),
@@ -337,6 +429,8 @@ def save_checkpoint(model, obs_norm, delta_norm, path: Path):
         "delta_std":  delta_norm.std.detach().cpu(),
         "obs_dim":    OBS_DIM,
         "act_dim":    ACT_DIM,
+        "action_low":  torch.tensor(ACTION_LOW, dtype=torch.float32),
+        "action_high": torch.tensor(ACTION_HIGH, dtype=torch.float32),
         "hidden":     MODEL_HIDDEN,
         "n_layers":   MODEL_LAYERS,
     }, str(path))
@@ -344,7 +438,16 @@ def save_checkpoint(model, obs_norm, delta_norm, path: Path):
 
 
 def load_checkpoint(path: Path, device):
+    global OBS_DIM, ACT_DIM, ACTION_LOW, ACTION_HIGH
     ckpt = torch.load(str(path), map_location=device, weights_only=True)
+    OBS_DIM = int(ckpt["obs_dim"])
+    ACT_DIM = int(ckpt["act_dim"])
+    if "action_low" in ckpt and "action_high" in ckpt:
+        ACTION_LOW = ckpt["action_low"].detach().cpu().numpy().astype(np.float32)
+        ACTION_HIGH = ckpt["action_high"].detach().cpu().numpy().astype(np.float32)
+    else:
+        _detect_env_dims()
+
     model = DynamicsModel(ckpt["obs_dim"], ckpt["act_dim"],
                           ckpt["hidden"], ckpt["n_layers"]).to(device)
     model.load_state_dict(ckpt["model"])
@@ -424,10 +527,12 @@ def save_all_curves(history: Dict, plots_dir: Path):
 # =============================================================================
 def train():
     set_seed(SEED)
+    _detect_env_dims()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device} | OBS={OBS_DIM} ACT={ACT_DIM}", flush=True)
     print(f"Config: iters={NUM_ITERATIONS}, steps/iter={STEPS_PER_ITER}, "
-          f"init={INIT_RANDOM_STEPS}, H={MPC_HORIZON}, K={MPC_NUM_CANDIDATES}", flush=True)
+          f"init={INIT_RANDOM_STEPS}, H={MPC_HORIZON}, K={MPC_NUM_CANDIDATES}, "
+          f"I={MPC_CEM_ITERS}, E={MPC_NUM_ELITES}", flush=True)
 
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -438,6 +543,7 @@ def train():
 
     history: Dict = dict(all_returns=[], train_losses_flat=[],
                          val_mses=[], rollout_errs=[])
+    best_val_mse = float("inf")
 
     # ---- Phase 0: random data collection ----
     print(f"\n[Phase 0] Collecting {INIT_RANDOM_STEPS} random transitions...", flush=True)
@@ -460,9 +566,15 @@ def train():
         history["val_mses"].append(val_mse)
         print(f"  Model: last_train_loss={train_losses[-1]:.4f}  val_mse={val_mse:.6f}",
               flush=True)
+        if val_mse < best_val_mse:
+            best_val_mse = val_mse
+            print(f"  ** New best val_mse={best_val_mse:.6f}; saving best checkpoint",
+                  flush=True)
+            save_checkpoint(model, obs_norm, delta_norm, BEST_CKPT_PATH)
 
-        print(f"  MPC collecting {STEPS_PER_ITER} steps "
-              f"(H={MPC_HORIZON}, K={MPC_NUM_CANDIDATES})...", flush=True)
+        print(f"  CEM MPC collecting {STEPS_PER_ITER} steps "
+              f"(H={MPC_HORIZON}, K={MPC_NUM_CANDIDATES}, "
+              f"I={MPC_CEM_ITERS}, E={MPC_NUM_ELITES})...", flush=True)
         env = make_env()
         ep_rets, mean_err = run_mpc_iter(env, buffer, model,
                                          obs_norm, delta_norm, device)
@@ -470,7 +582,7 @@ def train():
         history["all_returns"].extend(ep_rets)
         history["rollout_errs"].append(mean_err)
         avg_r = np.mean(ep_rets) if ep_rets else 0.0
-        print(f"  MPC: {len(ep_rets)} eps | avg_return={avg_r:.1f} | "
+        print(f"  CEM MPC: {len(ep_rets)} eps | avg_return={avg_r:.1f} | "
               f"pred_err={mean_err:.6f} | {time.time()-t0:.1f}s", flush=True)
 
         # Save checkpoint after each iteration so a long run can be resumed
@@ -479,7 +591,13 @@ def train():
 
     # ---- Final retrain on the full buffer ----
     print(f"\n[Final retrain] buffer={buffer.size} transitions", flush=True)
-    train_model(model, optimizer, buffer, obs_norm, delta_norm, device)
+    _, final_val_mse = train_model(model, optimizer, buffer,
+                                   obs_norm, delta_norm, device)
+    if final_val_mse < best_val_mse:
+        best_val_mse = final_val_mse
+        print(f"  ** New best val_mse={best_val_mse:.6f}; saving best checkpoint",
+              flush=True)
+        save_checkpoint(model, obs_norm, delta_norm, BEST_CKPT_PATH)
     save_checkpoint(model, obs_norm, delta_norm, CKPT_PATH)
 
     # ---- Plots ----
@@ -495,6 +613,7 @@ def train():
 # =============================================================================
 def evaluate_and_record(model, obs_norm, delta_norm, device):
     print(f"\n[Eval] Running {N_EVAL_EPISODES} measurement episodes...", flush=True)
+    action_low_t, action_high_t = _action_bounds_tensors(device)
     env = make_env()
     rewards: List[float] = []
     for i in range(N_EVAL_EPISODES):
@@ -502,8 +621,10 @@ def evaluate_and_record(model, obs_norm, delta_norm, device):
         done = False
         ep_ret = 0.0
         while not done:
-            act = mpc_action(obs, model, obs_norm, delta_norm, device)
-            act = np.clip(act, -1.0, 1.0)
+            act = mpc_action_cem(obs, model, obs_norm, delta_norm, device,
+                                 action_low_t, action_high_t,
+                                 planning_score_fn=planning_objective)
+            act = _clip_action(act)
             obs, rew, term, trunc, _ = env.step(act)
             done = term or trunc
             ep_ret += rew
@@ -524,13 +645,17 @@ def evaluate_and_record(model, obs_norm, delta_norm, device):
         ep_ret = 0.0
         ep_frames = 0
         while not done:
-            act = mpc_action(obs, model, obs_norm, delta_norm, device)
-            act = np.clip(act, -1.0, 1.0)
+            act = mpc_action_cem(obs, model, obs_norm, delta_norm, device,
+                                 action_low_t, action_high_t,
+                                 planning_score_fn=planning_objective)
+            act = _clip_action(act)
             obs, rew, term, trunc, _ = env.step(act)
             done = term or trunc
             frames.append(env.render())
             ep_ret += rew
             ep_frames += 1
+            if VIDEO_MAX_FRAMES is not None and ep_frames >= VIDEO_MAX_FRAMES:
+                break
         print(f"  Video ep {ep+1}: return={ep_ret:.2f}, frames={ep_frames}", flush=True)
     env.close()
 
@@ -575,17 +700,21 @@ def main():
     print(f"args: {vars(args)}", flush=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    _detect_env_dims()
 
     if args.eval_only:
-        if not CKPT_PATH.exists():
-            print(f"ERROR: checkpoint {CKPT_PATH} not found. Train first.", flush=True)
+        ckpt_path = _preferred_checkpoint_path()
+        if not ckpt_path.exists():
+            print(f"ERROR: no checkpoint found at {BEST_CKPT_PATH} or {CKPT_PATH}. Train first.",
+                  flush=True)
             sys.exit(1)
-        model, obs_norm, delta_norm = load_checkpoint(CKPT_PATH, device)
+        model, obs_norm, delta_norm = load_checkpoint(ckpt_path, device)
         evaluate_and_record(model, obs_norm, delta_norm, device)
     else:
         model, obs_norm, delta_norm, history = train()
-        # Reload from the saved checkpoint so eval mirrors the deployed weights
-        model, obs_norm, delta_norm = load_checkpoint(CKPT_PATH, device)
+        ckpt_path = _preferred_checkpoint_path()
+        print(f"Reloading {ckpt_path.name} for final evaluation", flush=True)
+        model, obs_norm, delta_norm = load_checkpoint(ckpt_path, device)
         evaluate_and_record(model, obs_norm, delta_norm, device)
 
     print(f"\n=== Run finished at {time.strftime('%Y-%m-%d %H:%M:%S')} ===", flush=True)
