@@ -1,0 +1,126 @@
+=== Run started at 2026-04-25 16:03:32 ===
+args: {'smoke': False, 'eval_only': False}
+Device: cpu | OBS=18 ACT=6
+Config: iters=15, steps/iter=1000, init=5000, H=15, K=500
+
+[Phase 0] Collecting 5000 random transitions...
+  Buffer: 5000 transitions | 5 episodes | avg return=-264.1
+
+[Iter 1/15] Training model on 5000 transitions...
+  Model: last_train_loss=0.0597  val_mse=0.846381
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=-220.0 | pred_err=1.209752 | 14.5s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 2/15] Training model on 6000 transitions...
+  Model: last_train_loss=0.0480  val_mse=0.702364
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=-230.7 | pred_err=1.070113 | 14.4s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 3/15] Training model on 7000 transitions...
+  Model: last_train_loss=0.0384  val_mse=0.709027
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=-232.6 | pred_err=57.022499 | 14.8s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 4/15] Training model on 8000 transitions...
+  Model: last_train_loss=0.0368  val_mse=0.574201
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=-83.3 | pred_err=0.340248 | 15.3s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 5/15] Training model on 9000 transitions...
+  Model: last_train_loss=0.0299  val_mse=0.496802
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=-86.9 | pred_err=1.034583 | 16.1s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 6/15] Training model on 10000 transitions...
+  Model: last_train_loss=0.0256  val_mse=0.487246
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=26.1 | pred_err=0.381408 | 17.6s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 7/15] Training model on 11000 transitions...
+  Model: last_train_loss=0.0225  val_mse=0.425369
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=117.4 | pred_err=0.466944 | 17.3s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 8/15] Training model on 12000 transitions...
+  Model: last_train_loss=0.0208  val_mse=0.427728
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=171.3 | pred_err=0.340092 | 18.0s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 9/15] Training model on 13000 transitions...
+  Model: last_train_loss=0.0192  val_mse=0.386422
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=112.9 | pred_err=0.302075 | 17.5s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 10/15] Training model on 14000 transitions...
+  Model: last_train_loss=0.0180  val_mse=0.372803
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=205.0 | pred_err=0.314951 | 18.6s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 11/15] Training model on 15000 transitions...
+  Model: last_train_loss=0.0172  val_mse=0.338009
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=287.9 | pred_err=0.298389 | 20.3s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 12/15] Training model on 16000 transitions...
+  Model: last_train_loss=0.0164  val_mse=0.333951
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=232.7 | pred_err=0.299527 | 19.7s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 13/15] Training model on 17000 transitions...
+  Model: last_train_loss=0.0157  val_mse=0.285028
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=292.5 | pred_err=0.232438 | 19.8s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 14/15] Training model on 18000 transitions...
+  Model: last_train_loss=0.0150  val_mse=0.298339
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=331.0 | pred_err=0.300563 | 20.2s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 15/15] Training model on 19000 transitions...
+  Model: last_train_loss=0.0143  val_mse=0.287928
+  MPC collecting 1000 steps (H=15, K=500)...
+  MPC: 1 eps | avg_return=345.6 | pred_err=0.226861 | 20.8s
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Final retrain] buffer=20000 transitions
+Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Plotting] ...
+Saved: /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/Plot.jpg
+Saved: /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/plots/reward_curve.jpg
+All diagnostic curves saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/plots/
+Loaded checkpoint from /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Eval] Running 10 measurement episodes...
+  Eval ep 1: return=409.10
+  Eval ep 2: return=365.81
+  Eval ep 3: return=355.56
+  Eval ep 4: return=321.28
+  Eval ep 5: return=432.30
+  Eval ep 6: return=280.71
+  Eval ep 7: return=301.74
+  Eval ep 8: return=405.93
+  Eval ep 9: return=306.08
+  Eval ep 10: return=327.19
+Eval over 10 eps: mean=350.57 ± 49.07, min=280.71, max=432.30
+
+[Video] Recording 2 episode(s)...
+  Video ep 1: return=375.52, frames=1000
+  Video ep 2: return=307.86, frames=1000
+Video: /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/Video.mp4 (2000 frames, 100.0s)
+
+=== Run finished at 2026-04-25 16:10:51 ===
