@@ -45,7 +45,13 @@ MPC_CEM_ITERS         = 3
 MPC_NUM_ELITES        = 50
 MPC_INIT_STD          = 1.0
 MPC_MIN_STD           = 0.05
-UPRIGHT_BONUS_WEIGHT  = 0.05
+TORSO_ANGLE_WEIGHT    = 3.0
+TORSO_HEIGHT_WEIGHT   = 10.0
+TORSO_ANGVEL_WEIGHT   = 0.05
+TORSO_MIN_HEIGHT      = -0.20
+FALL_ANGLE_THRESHOLD  = 1.2
+FALL_HEIGHT_THRESHOLD = -0.35
+FALL_PENALTY          = 5.0
 
 # Evaluation / video
 N_EVAL_EPISODES       = 10
@@ -214,8 +220,17 @@ def compute_reward_torch(s, a, s_next):
 
 def planning_objective(s, a, s_next):
     base = compute_reward_torch(s, a, s_next)
-    upright_bonus = -UPRIGHT_BONUS_WEIGHT * (s_next[..., 2] ** 2)
-    return base + upright_bonus
+    torso_angle = torch.atan2(torch.sin(s_next[..., 2]), torch.cos(s_next[..., 2]))
+    low_torso = torch.relu(TORSO_MIN_HEIGHT - s_next[..., 1])
+    fall = ((torso_angle.abs() > FALL_ANGLE_THRESHOLD) |
+            (s_next[..., 1] < FALL_HEIGHT_THRESHOLD)).float()
+    posture_cost = (
+        TORSO_ANGLE_WEIGHT * torso_angle.square()
+        + TORSO_HEIGHT_WEIGHT * low_torso.square()
+        + TORSO_ANGVEL_WEIGHT * s_next[..., 11].square()
+        + FALL_PENALTY * fall
+    )
+    return base - posture_cost
 
 
 # =============================================================================
