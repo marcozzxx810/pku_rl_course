@@ -1,126 +1,331 @@
-=== Run started at 2026-04-25 16:03:32 ===
+=== Run started at 2026-04-25 18:19:24 ===
 args: {'smoke': False, 'eval_only': False}
-Device: cpu | OBS=18 ACT=6
-Config: iters=15, steps/iter=1000, init=5000, H=15, K=500
+Device: cuda | OBS=18 ACT=6
+Config: iters=40, steps/iter=1000, init=5000, H=15, K=500, I=3, E=50
 
 [Phase 0] Collecting 5000 random transitions...
-  Buffer: 5000 transitions | 5 episodes | avg return=-264.1
+  Buffer: 5000 transitions | 5 episodes | avg return=-280.0
 
-[Iter 1/15] Training model on 5000 transitions...
-  Model: last_train_loss=0.0597  val_mse=0.846381
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=-220.0 | pred_err=1.209752 | 14.5s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 1/40] Training model on 5000 transitions...
+  Model: last_train_loss=0.0511  val_mse=0.884033
+  ** New best val_mse=0.884033; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=-30.7 | pred_err=0.359989 | 17.1s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 2/15] Training model on 6000 transitions...
-  Model: last_train_loss=0.0480  val_mse=0.702364
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=-230.7 | pred_err=1.070113 | 14.4s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 2/40] Training model on 6000 transitions...
+  Model: last_train_loss=0.0324  val_mse=0.508219
+  ** New best val_mse=0.508219; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=-129.2 | pred_err=0.323610 | 16.7s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 3/15] Training model on 7000 transitions...
-  Model: last_train_loss=0.0384  val_mse=0.709027
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=-232.6 | pred_err=57.022499 | 14.8s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 3/40] Training model on 7000 transitions...
+  Model: last_train_loss=0.0222  val_mse=0.429079
+  ** New best val_mse=0.429079; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=40.4 | pred_err=0.125734 | 16.8s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 4/15] Training model on 8000 transitions...
-  Model: last_train_loss=0.0368  val_mse=0.574201
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=-83.3 | pred_err=0.340248 | 15.3s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 4/40] Training model on 8000 transitions...
+  Model: last_train_loss=0.0188  val_mse=0.334682
+  ** New best val_mse=0.334682; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=36.9 | pred_err=0.143245 | 17.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 5/15] Training model on 9000 transitions...
-  Model: last_train_loss=0.0299  val_mse=0.496802
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=-86.9 | pred_err=1.034583 | 16.1s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 5/40] Training model on 9000 transitions...
+  Model: last_train_loss=0.0159  val_mse=0.266584
+  ** New best val_mse=0.266584; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=85.6 | pred_err=0.031098 | 17.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 6/15] Training model on 10000 transitions...
-  Model: last_train_loss=0.0256  val_mse=0.487246
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=26.1 | pred_err=0.381408 | 17.6s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 6/40] Training model on 10000 transitions...
+  Model: last_train_loss=0.0135  val_mse=0.209383
+  ** New best val_mse=0.209383; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=222.6 | pred_err=0.194995 | 17.4s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 7/15] Training model on 11000 transitions...
-  Model: last_train_loss=0.0225  val_mse=0.425369
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=117.4 | pred_err=0.466944 | 17.3s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 7/40] Training model on 11000 transitions...
+  Model: last_train_loss=0.0128  val_mse=0.223301
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=200.8 | pred_err=0.064397 | 17.5s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 8/15] Training model on 12000 transitions...
-  Model: last_train_loss=0.0208  val_mse=0.427728
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=171.3 | pred_err=0.340092 | 18.0s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 8/40] Training model on 12000 transitions...
+  Model: last_train_loss=0.0117  val_mse=0.169518
+  ** New best val_mse=0.169518; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=369.7 | pred_err=0.170412 | 17.8s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 9/15] Training model on 13000 transitions...
-  Model: last_train_loss=0.0192  val_mse=0.386422
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=112.9 | pred_err=0.302075 | 17.5s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 9/40] Training model on 13000 transitions...
+  Model: last_train_loss=0.0111  val_mse=0.150210
+  ** New best val_mse=0.150210; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=274.9 | pred_err=0.065875 | 18.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 10/15] Training model on 14000 transitions...
-  Model: last_train_loss=0.0180  val_mse=0.372803
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=205.0 | pred_err=0.314951 | 18.6s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 10/40] Training model on 14000 transitions...
+  Model: last_train_loss=0.0104  val_mse=0.135552
+  ** New best val_mse=0.135552; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=558.4 | pred_err=0.252843 | 18.2s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 11/15] Training model on 15000 transitions...
-  Model: last_train_loss=0.0172  val_mse=0.338009
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=287.9 | pred_err=0.298389 | 20.3s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 11/40] Training model on 15000 transitions...
+  Model: last_train_loss=0.0102  val_mse=0.137669
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=424.0 | pred_err=0.081580 | 18.4s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 12/15] Training model on 16000 transitions...
-  Model: last_train_loss=0.0164  val_mse=0.333951
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=232.7 | pred_err=0.299527 | 19.7s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 12/40] Training model on 16000 transitions...
+  Model: last_train_loss=0.0094  val_mse=0.111577
+  ** New best val_mse=0.111577; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=390.6 | pred_err=0.056708 | 18.6s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 13/15] Training model on 17000 transitions...
-  Model: last_train_loss=0.0157  val_mse=0.285028
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=292.5 | pred_err=0.232438 | 19.8s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 13/40] Training model on 17000 transitions...
+  Model: last_train_loss=0.0088  val_mse=0.112575
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=328.6 | pred_err=0.025243 | 18.8s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 14/15] Training model on 18000 transitions...
-  Model: last_train_loss=0.0150  val_mse=0.298339
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=331.0 | pred_err=0.300563 | 20.2s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 14/40] Training model on 18000 transitions...
+  Model: last_train_loss=0.0081  val_mse=0.107607
+  ** New best val_mse=0.107607; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=339.5 | pred_err=0.023586 | 19.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Iter 15/15] Training model on 19000 transitions...
-  Model: last_train_loss=0.0143  val_mse=0.287928
-  MPC collecting 1000 steps (H=15, K=500)...
-  MPC: 1 eps | avg_return=345.6 | pred_err=0.226861 | 20.8s
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 15/40] Training model on 19000 transitions...
+  Model: last_train_loss=0.0076  val_mse=0.092725
+  ** New best val_mse=0.092725; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=481.3 | pred_err=0.054482 | 19.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
-[Final retrain] buffer=20000 transitions
-Checkpoint saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+[Iter 16/40] Training model on 20000 transitions...
+  Model: last_train_loss=0.0073  val_mse=0.100443
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=372.3 | pred_err=0.017117 | 19.1s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 17/40] Training model on 21000 transitions...
+  Model: last_train_loss=0.0069  val_mse=0.088739
+  ** New best val_mse=0.088739; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=416.0 | pred_err=0.028833 | 19.1s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 18/40] Training model on 22000 transitions...
+  Model: last_train_loss=0.0068  val_mse=0.080018
+  ** New best val_mse=0.080018; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=459.4 | pred_err=0.023483 | 19.2s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 19/40] Training model on 23000 transitions...
+  Model: last_train_loss=0.0064  val_mse=0.075779
+  ** New best val_mse=0.075779; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=469.4 | pred_err=0.024463 | 19.4s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 20/40] Training model on 24000 transitions...
+  Model: last_train_loss=0.0062  val_mse=0.072936
+  ** New best val_mse=0.072936; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=480.9 | pred_err=0.021943 | 19.8s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 21/40] Training model on 25000 transitions...
+  Model: last_train_loss=0.0062  val_mse=0.067097
+  ** New best val_mse=0.067097; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=449.2 | pred_err=0.022858 | 19.8s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 22/40] Training model on 26000 transitions...
+  Model: last_train_loss=0.0059  val_mse=0.063661
+  ** New best val_mse=0.063661; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=443.6 | pred_err=0.015272 | 20.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 23/40] Training model on 27000 transitions...
+  Model: last_train_loss=0.0057  val_mse=0.062961
+  ** New best val_mse=0.062961; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=470.1 | pred_err=0.018283 | 20.5s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 24/40] Training model on 28000 transitions...
+  Model: last_train_loss=0.0056  val_mse=0.051165
+  ** New best val_mse=0.051165; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=612.1 | pred_err=0.107282 | 20.7s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 25/40] Training model on 29000 transitions...
+  Model: last_train_loss=0.0058  val_mse=0.061426
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=460.7 | pred_err=0.025426 | 20.6s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 26/40] Training model on 30000 transitions...
+  Model: last_train_loss=0.0057  val_mse=0.056580
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=438.8 | pred_err=0.016781 | 21.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 27/40] Training model on 31000 transitions...
+  Model: last_train_loss=0.0055  val_mse=0.054394
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=393.3 | pred_err=0.024021 | 21.0s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 28/40] Training model on 32000 transitions...
+  Model: last_train_loss=0.0054  val_mse=0.050309
+  ** New best val_mse=0.050309; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=349.6 | pred_err=0.029829 | 21.1s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 29/40] Training model on 33000 transitions...
+  Model: last_train_loss=0.0066  val_mse=0.051595
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=389.8 | pred_err=0.028917 | 21.7s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 30/40] Training model on 34000 transitions...
+  Model: last_train_loss=0.0051  val_mse=0.055028
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=438.7 | pred_err=0.019623 | 21.9s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 31/40] Training model on 35000 transitions...
+  Model: last_train_loss=0.0051  val_mse=0.049368
+  ** New best val_mse=0.049368; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=934.6 | pred_err=0.109251 | 22.1s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 32/40] Training model on 36000 transitions...
+  Model: last_train_loss=0.0051  val_mse=0.050294
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=475.1 | pred_err=0.033460 | 22.3s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 33/40] Training model on 37000 transitions...
+  Model: last_train_loss=0.0051  val_mse=0.051551
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=484.3 | pred_err=0.016935 | 22.4s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 34/40] Training model on 38000 transitions...
+  Model: last_train_loss=0.0049  val_mse=0.046155
+  ** New best val_mse=0.046155; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=457.6 | pred_err=0.015050 | 22.6s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 35/40] Training model on 39000 transitions...
+  Model: last_train_loss=0.0049  val_mse=0.045422
+  ** New best val_mse=0.045422; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=501.0 | pred_err=0.024645 | 22.7s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 36/40] Training model on 40000 transitions...
+  Model: last_train_loss=0.0049  val_mse=0.042155
+  ** New best val_mse=0.042155; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=484.1 | pred_err=0.014667 | 22.8s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 37/40] Training model on 41000 transitions...
+  Model: last_train_loss=0.0049  val_mse=0.044689
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=456.2 | pred_err=0.018140 | 22.9s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 38/40] Training model on 42000 transitions...
+  Model: last_train_loss=0.0048  val_mse=0.038851
+  ** New best val_mse=0.038851; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=389.7 | pred_err=0.012745 | 23.2s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 39/40] Training model on 43000 transitions...
+  Model: last_train_loss=0.0047  val_mse=0.041391
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=446.0 | pred_err=0.012965 | 23.3s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Iter 40/40] Training model on 44000 transitions...
+  Model: last_train_loss=0.0048  val_mse=0.043761
+  CEM MPC collecting 1000 steps (H=15, K=500, I=3, E=50)...
+  CEM MPC: 1 eps | avg_return=503.6 | pred_err=0.018867 | 23.5s
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
+
+[Final retrain] buffer=45000 transitions
+  ** New best val_mse=0.038450; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/agent.pth
 
 [Plotting] ...
-Saved: /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/Plot.jpg
-Saved: /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/plots/reward_curve.jpg
-All diagnostic curves saved to /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/plots/
-Loaded checkpoint from /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/agent.pth
+Saved: /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/Plot.jpg
+Saved: /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/plots/reward_curve.jpg
+All diagnostic curves saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/plots/
+Reloading best_agent.pth for final evaluation
+Loaded checkpoint from /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/best_agent.pth
 
 [Eval] Running 10 measurement episodes...
-  Eval ep 1: return=409.10
-  Eval ep 2: return=365.81
-  Eval ep 3: return=355.56
-  Eval ep 4: return=321.28
-  Eval ep 5: return=432.30
-  Eval ep 6: return=280.71
-  Eval ep 7: return=301.74
-  Eval ep 8: return=405.93
-  Eval ep 9: return=306.08
-  Eval ep 10: return=327.19
-Eval over 10 eps: mean=350.57 ± 49.07, min=280.71, max=432.30
+  Eval ep 1: return=478.06
+  Eval ep 2: return=452.67
+  Eval ep 3: return=518.91
+  Eval ep 4: return=497.93
+  Eval ep 5: return=472.54
+  Eval ep 6: return=463.95
+  Eval ep 7: return=502.47
+  Eval ep 8: return=476.33
+  Eval ep 9: return=493.41
+  Eval ep 10: return=503.16
+Eval over 10 eps: mean=485.94 ± 19.44, min=452.67, max=518.91
 
 [Video] Recording 2 episode(s)...
-  Video ep 1: return=375.52, frames=1000
-  Video ep 2: return=307.86, frames=1000
-Video: /Users/marcozzxx810/Documents/program_proj/pku_rl_course/hw3/submission/task1/Video.mp4 (2000 frames, 100.0s)
+  Video ep 1: return=459.63, frames=1000
+  Video ep 2: return=461.23, frames=1000
+Video: /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task1/Video.mp4 (2000 frames, 100.0s)
 
-=== Run finished at 2026-04-25 16:10:51 ===
+=== Run finished at 2026-04-25 18:36:02 ===
