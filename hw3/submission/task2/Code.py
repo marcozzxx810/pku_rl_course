@@ -272,6 +272,10 @@ class ReplayBuffer:
         self.ptr = (self.ptr + n) % self.max_size
         self.size = min(self.size + n, self.max_size)
 
+    def clear(self):
+        self.ptr = 0
+        self.size = 0
+
     def sample_np(self, batch_size: int):
         if self.size <= 0:
             raise RuntimeError("Cannot sample from an empty replay buffer.")
@@ -1222,6 +1226,7 @@ def train():
                 train_losses, val_mses = train_ensemble(
                     ensemble, normalizer, model_optimizer, real_buffer, device
                 )
+                model_buffer.clear()
                 history["model_losses"].extend(train_losses)
                 history["model_val_mses"].append(float(np.mean(val_mses)))
                 print(
