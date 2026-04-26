@@ -1,0 +1,263 @@
+=== Run started at 2026-04-25 22:29:27 ===
+train.log mode: w
+args: {'smoke': False, 'eval_only': False}
+Device: cuda | OBS=18 ACT=6
+Paper HalfCheetah reference: N=400, E=1000, M=400, B=7, G=40, k=1
+Comparable real budget: total=45000, random=5000, policy=40000
+MBPO config: E=1000, M=400, B=7, elites=5, G=40, k=1->1
+
+[Phase 0] Collecting 5000 random transitions...
+  Random buffer=5000 transitions | completed_eps=5 | open_ep_len=0
+
+[Initial model train] D_env=5000
+  Model: epochs=80 last_loss=-17.0361 val_mse=0.945871 elites=[3, 4, 2, 6, 1]
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[MBPO training] 40000 policy real env steps...
+
+[Model train @ real_step=6000] D_env=6000 D_model=400000
+  Model: epochs=80 last_loss=-24.6267 val_mse=0.786982 elites=[2, 5, 6, 1, 0]
+
+[Model train @ real_step=7000] D_env=7000 D_model=400000
+  Model: epochs=54 last_loss=-31.1344 val_mse=0.676829 elites=[0, 5, 2, 1, 3]
+
+[Model train @ real_step=8000] D_env=8000 D_model=400000
+  Model: epochs=11 last_loss=-29.1515 val_mse=0.604838 elites=[5, 2, 0, 1, 6]
+
+[Model train @ real_step=9000] D_env=9000 D_model=400000
+  Model: epochs=16 last_loss=-30.2824 val_mse=0.581314 elites=[0, 4, 6, 5, 2]
+
+[Model train @ real_step=10000] D_env=10000 D_model=400000
+  Model: epochs=9 last_loss=-30.5623 val_mse=0.567579 elites=[0, 4, 6, 2, 1]
+
+[Progress] real_steps=10000/45000 D_env=10000 D_model=400000 synthetic=2000000 sac_updates=200000 recent_return=-305.4 elapsed=1513.9s
+
+[Checkpoint eval step 10000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 10000 ep 1: return=-117.78
+  Checkpoint eval step 10000 ep 2: return=398.47
+  Checkpoint eval step 10000 ep 3: return=-119.11
+Checkpoint eval step 10000: mean=53.86 +/- 243.67, min=-119.11, max=398.47
+  ** New best eval_mean_return=53.86; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Model train @ real_step=11000] D_env=11000 D_model=400000
+  Model: epochs=8 last_loss=-30.5874 val_mse=0.571611 elites=[4, 3, 0, 5, 1]
+
+[Model train @ real_step=12000] D_env=12000 D_model=400000
+  Model: epochs=7 last_loss=-30.3636 val_mse=0.593204 elites=[5, 0, 1, 6, 4]
+
+[Model train @ real_step=13000] D_env=13000 D_model=400000
+  Model: epochs=14 last_loss=-31.0300 val_mse=0.546974 elites=[0, 4, 1, 6, 2]
+
+[Model train @ real_step=14000] D_env=14000 D_model=400000
+  Model: epochs=9 last_loss=-31.2414 val_mse=0.585267 elites=[5, 0, 3, 1, 2]
+
+[Model train @ real_step=15000] D_env=15000 D_model=400000
+  Model: epochs=9 last_loss=-31.3952 val_mse=0.596939 elites=[2, 5, 0, 6, 4]
+
+[Progress] real_steps=15000/45000 D_env=15000 D_model=400000 synthetic=4000000 sac_updates=400000 recent_return=921.2 elapsed=2976.8s
+
+[Checkpoint eval step 15000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 15000 ep 1: return=2097.12
+  Checkpoint eval step 15000 ep 2: return=1839.31
+  Checkpoint eval step 15000 ep 3: return=2023.64
+Checkpoint eval step 15000: mean=1986.69 +/- 108.44, min=1839.31, max=2097.12
+  ** New best eval_mean_return=1986.69; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Model train @ real_step=16000] D_env=16000 D_model=400000
+  Model: epochs=6 last_loss=-31.3968 val_mse=0.615030 elites=[1, 2, 4, 6, 5]
+
+[Model train @ real_step=17000] D_env=17000 D_model=400000
+  Model: epochs=17 last_loss=-32.9018 val_mse=0.614561 elites=[2, 0, 6, 5, 1]
+
+[Model train @ real_step=18000] D_env=18000 D_model=400000
+  Model: epochs=9 last_loss=-32.7532 val_mse=0.605841 elites=[0, 1, 4, 3, 6]
+
+[Model train @ real_step=19000] D_env=19000 D_model=400000
+  Model: epochs=10 last_loss=-33.4254 val_mse=0.647306 elites=[1, 0, 6, 4, 2]
+
+[Model train @ real_step=20000] D_env=20000 D_model=400000
+  Model: epochs=8 last_loss=-33.4760 val_mse=0.561316 elites=[0, 1, 4, 6, 2]
+
+[Progress] real_steps=20000/45000 D_env=20000 D_model=400000 synthetic=6000000 sac_updates=600000 recent_return=1992.9 elapsed=4448.7s
+
+[Checkpoint eval step 20000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 20000 ep 1: return=3147.75
+  Checkpoint eval step 20000 ep 2: return=3294.85
+  Checkpoint eval step 20000 ep 3: return=3050.52
+Checkpoint eval step 20000: mean=3164.38 +/- 100.44, min=3050.52, max=3294.85
+  ** New best eval_mean_return=3164.38; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Model train @ real_step=21000] D_env=21000 D_model=400000
+  Model: epochs=19 last_loss=-34.9239 val_mse=0.575566 elites=[4, 0, 1, 6, 2]
+
+[Model train @ real_step=22000] D_env=22000 D_model=400000
+  Model: epochs=20 last_loss=-36.9731 val_mse=0.559007 elites=[4, 1, 0, 3, 6]
+
+[Model train @ real_step=23000] D_env=23000 D_model=400000
+  Model: epochs=6 last_loss=-36.1097 val_mse=0.519369 elites=[4, 0, 1, 3, 6]
+
+[Model train @ real_step=24000] D_env=24000 D_model=400000
+  Model: epochs=80 last_loss=-43.0922 val_mse=0.452522 elites=[4, 0, 1, 3, 5]
+
+[Model train @ real_step=25000] D_env=25000 D_model=400000
+  Model: epochs=11 last_loss=-42.5375 val_mse=0.379349 elites=[4, 0, 1, 3, 2]
+
+[Progress] real_steps=25000/45000 D_env=25000 D_model=400000 synthetic=8000000 sac_updates=800000 recent_return=3489.2 elapsed=6051.6s
+
+[Checkpoint eval step 25000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 25000 ep 1: return=3983.47
+  Checkpoint eval step 25000 ep 2: return=3879.62
+  Checkpoint eval step 25000 ep 3: return=3957.91
+Checkpoint eval step 25000: mean=3940.34 +/- 44.18, min=3879.62, max=3983.47
+  ** New best eval_mean_return=3940.34; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Model train @ real_step=26000] D_env=26000 D_model=400000
+  Model: epochs=6 last_loss=-42.3643 val_mse=0.364285 elites=[0, 4, 1, 3, 5]
+
+[Model train @ real_step=27000] D_env=27000 D_model=400000
+  Model: epochs=7 last_loss=-42.3764 val_mse=0.381049 elites=[4, 0, 1, 3, 6]
+
+[Model train @ real_step=28000] D_env=28000 D_model=400000
+  Model: epochs=6 last_loss=-42.3582 val_mse=0.391922 elites=[4, 0, 1, 3, 6]
+
+[Model train @ real_step=29000] D_env=29000 D_model=400000
+  Model: epochs=7 last_loss=-42.2863 val_mse=0.379008 elites=[4, 0, 1, 3, 6]
+
+[Model train @ real_step=30000] D_env=30000 D_model=400000
+  Model: epochs=7 last_loss=-42.5497 val_mse=0.355632 elites=[4, 0, 1, 3, 6]
+
+[Progress] real_steps=30000/45000 D_env=30000 D_model=400000 synthetic=10000000 sac_updates=1000000 recent_return=3563.4 elapsed=7530.1s
+
+[Checkpoint eval step 30000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 30000 ep 1: return=512.80
+  Checkpoint eval step 30000 ep 2: return=745.10
+  Checkpoint eval step 30000 ep 3: return=4923.89
+Checkpoint eval step 30000: mean=2060.60 +/- 2026.88, min=512.80, max=4923.89
+  Best eval_mean_return remains 3940.34
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Model train @ real_step=31000] D_env=31000 D_model=400000
+  Model: epochs=6 last_loss=-42.6393 val_mse=0.385301 elites=[4, 1, 0, 3, 5]
+
+[Model train @ real_step=32000] D_env=32000 D_model=400000
+  Model: epochs=7 last_loss=-42.8218 val_mse=0.386279 elites=[4, 1, 0, 3, 6]
+
+[Model train @ real_step=33000] D_env=33000 D_model=400000
+  Model: epochs=10 last_loss=-42.8275 val_mse=0.370374 elites=[4, 1, 0, 3, 5]
+
+[Model train @ real_step=34000] D_env=34000 D_model=400000
+  Model: epochs=6 last_loss=-43.1844 val_mse=0.361159 elites=[4, 1, 0, 3, 5]
+
+[Model train @ real_step=35000] D_env=35000 D_model=400000
+  Model: epochs=6 last_loss=-42.9403 val_mse=0.383231 elites=[4, 1, 3, 0, 6]
+
+[Progress] real_steps=35000/45000 D_env=35000 D_model=400000 synthetic=12000000 sac_updates=1200000 recent_return=4643.8 elapsed=9021.3s
+
+[Checkpoint eval step 35000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 35000 ep 1: return=5354.15
+  Checkpoint eval step 35000 ep 2: return=5129.22
+  Checkpoint eval step 35000 ep 3: return=5249.73
+Checkpoint eval step 35000: mean=5244.37 +/- 91.91, min=5129.22, max=5354.15
+  ** New best eval_mean_return=5244.37; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Model train @ real_step=36000] D_env=36000 D_model=400000
+  Model: epochs=6 last_loss=-43.0483 val_mse=0.378060 elites=[4, 0, 1, 3, 5]
+
+[Model train @ real_step=37000] D_env=37000 D_model=400000
+  Model: epochs=6 last_loss=-43.0089 val_mse=0.358495 elites=[4, 1, 0, 3, 2]
+
+[Model train @ real_step=38000] D_env=38000 D_model=400000
+  Model: epochs=6 last_loss=-43.1026 val_mse=0.361134 elites=[4, 1, 3, 0, 6]
+
+[Model train @ real_step=39000] D_env=39000 D_model=400000
+  Model: epochs=6 last_loss=-43.1325 val_mse=0.364098 elites=[4, 1, 0, 3, 6]
+
+[Model train @ real_step=40000] D_env=40000 D_model=400000
+  Model: epochs=6 last_loss=-43.3845 val_mse=0.366132 elites=[4, 0, 1, 3, 6]
+
+[Progress] real_steps=40000/45000 D_env=40000 D_model=400000 synthetic=14000000 sac_updates=1400000 recent_return=4547.0 elapsed=10510.8s
+
+[Checkpoint eval step 40000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 40000 ep 1: return=5794.21
+  Checkpoint eval step 40000 ep 2: return=5467.93
+  Checkpoint eval step 40000 ep 3: return=5495.32
+Checkpoint eval step 40000: mean=5585.82 +/- 147.78, min=5467.93, max=5794.21
+  ** New best eval_mean_return=5585.82; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Model train @ real_step=41000] D_env=41000 D_model=400000
+  Model: epochs=7 last_loss=-43.3885 val_mse=0.377899 elites=[4, 0, 3, 1, 6]
+
+[Model train @ real_step=42000] D_env=42000 D_model=400000
+  Model: epochs=7 last_loss=-43.5942 val_mse=0.344206 elites=[4, 1, 0, 3, 5]
+
+[Model train @ real_step=43000] D_env=43000 D_model=400000
+  Model: epochs=6 last_loss=-43.6798 val_mse=0.358985 elites=[4, 1, 0, 3, 6]
+
+[Model train @ real_step=44000] D_env=44000 D_model=400000
+  Model: epochs=6 last_loss=-43.9314 val_mse=0.371106 elites=[4, 0, 1, 3, 6]
+
+[Model train @ real_step=45000] D_env=45000 D_model=400000
+  Model: epochs=6 last_loss=-43.7504 val_mse=0.340259 elites=[4, 1, 3, 0, 6]
+
+[Progress] real_steps=45000/45000 D_env=45000 D_model=400000 synthetic=16000000 sac_updates=1600000 recent_return=5673.1 elapsed=12013.5s
+
+[Checkpoint eval step 45000] Running 3 deterministic episode(s)...
+  Checkpoint eval step 45000 ep 1: return=5783.91
+  Checkpoint eval step 45000 ep 2: return=5666.00
+  Checkpoint eval step 45000 ep 3: return=5808.79
+Checkpoint eval step 45000: mean=5752.90 +/- 62.28, min=5666.00, max=5808.79
+  ** New best eval_mean_return=5752.90; saving best checkpoint
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Final model train] D_env=45000
+  Final model: epochs=6 val_mse=0.349568 elites=[4, 1, 0, 3, 6]
+
+[Final checkpoint eval] Running 3 deterministic episode(s)...
+  Final checkpoint eval ep 1: return=5783.91
+  Final checkpoint eval ep 2: return=5666.00
+  Final checkpoint eval ep 3: return=5808.79
+Final checkpoint eval: mean=5752.90 +/- 62.28, min=5666.00, max=5808.79
+  Best eval_mean_return remains 5752.90
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+Checkpoint saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/agent.pth
+
+[Plotting] ...
+Saved: /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/Plot.jpg
+Saved: /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/plots/reward_curve.jpg
+All diagnostic curves saved to /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/plots/
+Training complete: real_steps=45000, synthetic_transitions=16000000, sac_updates=1600000, best_eval=5752.90
+Reloading best_agent.pth for final evaluation
+Loaded checkpoint from /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/best_agent.pth
+
+[Eval] Running 10 deterministic episode(s)...
+  Eval ep 1: return=5607.64
+  Eval ep 2: return=5653.89
+  Eval ep 3: return=5803.97
+  Eval ep 4: return=5668.38
+  Eval ep 5: return=5828.04
+  Eval ep 6: return=5850.22
+  Eval ep 7: return=5526.26
+  Eval ep 8: return=5838.54
+  Eval ep 9: return=5942.67
+  Eval ep 10: return=5685.87
+Eval: mean=5740.55 +/- 123.87, min=5526.26, max=5942.67
+
+[Video] Recording at least 2 episode(s) and 30.0s...
+  Video ep 1: return=6046.19, frames=1000
+  Video ep 2: return=5848.46, frames=1000
+Video: /media/world_foundational_model/wfm_ckp-fileset/maizerong/projects/rl_course/repo/pku_rl_course/hw3/submission/task2/Video.mp4 (2000 frames, 100.0s)
+
+=== Run finished at 2026-04-26 01:50:18 ===
