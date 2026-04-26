@@ -3,7 +3,7 @@ title: "HW3: Model-based RL in HalfCheetah-v5"
 subtitle: "PKU Reinforcement Learning Course"
 author: "MAK CHAK WING  \\quad  UID: 2501213361"
 date: "2026"
-geometry: "margin=2.5cm"
+geometry: "margin=2.2cm"
 fontsize: 11pt
 numbersections: true
 toc: true
@@ -17,8 +17,24 @@ header-includes:
   - \usepackage{float}
   - '\floatplacement{figure}{H}'
   - \usepackage{setspace}
-  - \onehalfspacing
+  - '\setstretch{1.12}'
   - \usepackage{parskip}
+  - '\setlength{\parskip}{3pt plus 1pt minus 1pt}'
+  - '\setlength{\parindent}{0pt}'
+  - \usepackage{enumitem}
+  - '\setlist{nosep,leftmargin=*}'
+  - \usepackage{needspace}
+  - \usepackage{etoolbox}
+  - '\pretocmd{\section}{\Needspace{8\baselineskip}}{}{}'
+  - '\pretocmd{\subsection}{\Needspace{7\baselineskip}}{}{}'
+  - '\setlength{\tabcolsep}{5pt}'
+  - '\renewcommand{\arraystretch}{0.92}'
+  - '\setlength{\LTpre}{3pt}'
+  - '\setlength{\LTpost}{3pt}'
+  - '\AtBeginEnvironment{longtable}{\small}'
+  - '\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}'
+  - '\setlength{\floatsep}{6pt plus 2pt minus 2pt}'
+  - '\setlength{\intextsep}{6pt plus 2pt minus 2pt}'
   - \usepackage{fancyhdr}
   - '\pagestyle{fancy}'
   - '\fancyhf{}'
@@ -452,8 +468,6 @@ The two algorithms represent different points in the MBRL design space:
 - **Reward modelling.** MBRL v1.5 uses an analytic reward function, which removes one source of model error and is possible here because the HalfCheetah reward formula is known. MBPO's ensemble jointly predicts dynamics and reward, making it more general (applicable even when the reward is unknown) at the cost of an additional prediction target.
 - **Model architecture.** MBRL v1.5 uses a lightweight deterministic single model, while MBPO uses a 7-member probabilistic ensemble. The ensemble provides uncertainty quantification (via disagreement among members) and diversity (via bootstrap sampling), both of which reduce the risk of the policy over-exploiting model errors, but at the cost of 7× the model parameters and training time.
 
-\newpage
-
 # Conclusion
 
 - **MBRL v1.5** implements data-aggregation MBRL with a deterministic MLP dynamics model and CEM-MPC planner. It bootstraps quickly and achieves a final 10-episode mean return of **2762.4 ± 33.5** in 45 000 real env steps, trained in $\sim$ 37 minutes. The monotone learning curve and stable checkpoint evals demonstrate that data-aggregation effectively closes the model's distribution-shift gap across iterations.
@@ -461,7 +475,6 @@ The two algorithms represent different points in the MBRL design space:
 - **Sample efficiency crossover** occurs near 18 000–20 000 real env steps: MBRL v1.5 dominates before this point; MBPO dominates thereafter.
 - **MBPO's one-step rollout (k=1)** is the critical design choice that makes the method work at 45 000 steps: zero compounding model error means the ensemble's uncertainty stays well-calibrated and SAC's critic targets remain accurate.
 - **Best-checkpoint saving** proved essential for both methods: MBRL v1.5's post-final-retrain checkpoint underperformed its iter-40 best (2630 vs 2751), and MBPO's 30k-step regression was transparently isolated from the final result by the mechanism.
-- For future work, combining the two approaches by using MBRL v1.5's fast bootstrap to warm-start the MBPO SAC critic and then switching to MBPO's policy-based update could potentially achieve the best of both worlds: fast early learning and high final performance within the same real-env budget.
 
 \newpage
 
