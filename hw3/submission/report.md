@@ -80,6 +80,8 @@ The Task 1 implementation follows the **MBRL v1.5** recipe: an iterative data-ag
 
 This is closely related to the MBRL-as-DAgger view: each MPC step contributes a new transition to an ever-growing replay buffer, so the model is trained on the union of all historical on-policy data rather than only the most recent trajectory.
 
+The MPC objective includes a small amount of heuristic shaping only to stabilize action selection during planning. This does not change the algorithm's model-based nature: the controller still learns dynamics from real environment transitions and uses that learned model to plan actions. Reported returns are always the true HalfCheetah environment returns, not the shaped planning score.
+
 ## Data Collection from the Real Environment
 
 Data collection proceeds in two phases.
@@ -130,7 +132,7 @@ where $J$ is a **shaped planning objective**. Rather than optimizing the raw Hal
 
 $$J = r_{\text{HalfCheetah}}(s, a, s') - \lambda_\theta \tilde\theta^2 - \lambda_z\,\text{ReLU}(z_{\min} - s'_z)^2 - \lambda_{\dot\theta}\dot\theta^2 - \mathbb{1}[\text{fall}] \cdot P_{\text{fall}}$$
 
-where $\tilde\theta$ is the torso pitch angle (wrapped to $[-\pi, \pi]$), $s'_z$ is the torso height, $\dot\theta$ is the angular velocity, and the hard-fall indicator fires when $|\tilde\theta| > 1.2$ rad or $s'_z < -0.35$. These shaping terms prevent the CEM from exploiting model inaccuracies to propose sequences that make the cheetah spin or fall in order to achieve a large (but physically implausible) x-velocity.
+where $\tilde\theta$ is the torso pitch angle (wrapped to $[-\pi, \pi]$), $s'_z$ is the torso height, $\dot\theta$ is the angular velocity, and the hard-fall indicator fires when $|\tilde\theta| > 1.2$ rad or $s'_z < -0.35$. These terms are planning heuristics for the CEM optimizer: they discourage unstable imagined motions when selecting actions, but they are not used as the training or evaluation return.
 
 **CEM procedure.** The distribution over $H$-step action sequences is maintained as an independent Gaussian per time step and action dimension, initialized to the action-box midpoint with $\sigma = \frac{\text{high} - \text{low}}{2}$ (no warm-start across env steps):
 
@@ -183,9 +185,11 @@ Table: Task 1 hyperparameters.
 
 ![Task 1 reward curve. Blue circles: raw episode return per real-environment episode. Orange line: 5-episode moving average. Episodes 1–5 are the random-initialization phase; episodes 6–45 correspond to one MPC episode per outer iteration.](task1/plots/reward_curve.jpg)
 
-The learning curve follows a characteristic MBRL pattern. During the random initialization (5 000 steps, average return $-294.8$), the agent falls immediately and accumulates a large negative reward from the fall penalty built into HalfCheetah (there is no explicit fall penalty in this environment, but near-zero forward velocity over 1 000 steps yields a small positive forward reward that is overwhelmed by control cost, giving large negatives). After the first model training + MPC iteration, the return rises to $-6.6$, meaning the planner can already find action sequences that keep the cheetah balanced. By iteration 4 (8 000 real steps) the return crosses zero and reaches $+388.3$; by iteration 6 it exceeds 1 000.
+The learning curve follows a characteristic MBRL pattern. During random initialization, the agent often makes little forward progress while still paying control cost, producing negative returns. There is no explicit fall penalty in HalfCheetah; the poor return comes mainly from low forward velocity and accumulated control cost. After the first model training + MPC iteration, the return rises to $-6.6$, meaning the planner can already find action sequences that keep the cheetah balanced. By iteration 4 (8 000 real steps) the return crosses zero and reaches $+388.3$; by iteration 6 it exceeds 1 000.
 
 From iterations 8–40 the return climbs steadily from $\sim$ 1 700 to $\sim$ 2 800 with only minor oscillations. The steady improvement reflects the data-aggregation mechanism: each new iteration adds 1 000 transitions in the region the planner actually visits, giving the model progressively better coverage of the on-policy state distribution and reducing the value of the shaped objective overestimates that previously misled the CEM.
+
+All Task 1 training, checkpoint, and final evaluation scores reported here are measured by executing actions in the real HalfCheetah environment and summing the environment's reward. They are not the shaped MPC planning objective used internally by CEM.
 
 ```{=latex}
 \begin{figure}[H]
@@ -239,7 +243,7 @@ The iteration-40 checkpoint, not the post-final-retrain checkpoint, is the peak 
 
 Table: Task 1 final 10-episode evaluation (deterministic rollouts, best checkpoint).
 
-Wall-clock training time: **36 min 38 s** on CUDA (45 000 real env steps, 40 outer iterations).
+Wall-clock training time: **36 min 38 s** on one A800 GPU (45 000 real env steps, 40 outer iterations).
 
 \newpage
 
@@ -247,9 +251,9 @@ Wall-clock training time: **36 min 38 s** on CUDA (45 000 real env steps, 40 out
 
 ## Method Overview
 
-Task 2 implements **MBPO** (Model-Based Policy Optimization, Janner et al. 2019), which replaces the planning-based action selection of Task 1 with a **learned policy** trained by a model-free RL algorithm (SAC) on a mixture of real and synthetic data. The key insight is that short (k-step) model rollouts branched from real-data states provide high-quality additional training signal for the critic and actor, dramatically improving sample efficiency relative to model-free SAC alone, without the compounding model error that plagues long-horizon imagined rollouts.
+Task 2 implements **MBPO** (Model-Based Policy Optimization, Janner et al. 2019), which replaces the planning-based action selection of Task 1 with a **learned policy** trained by a model-free RL algorithm (SAC) on a mixture of real and synthetic data. The key insight is that short (k-step) model rollouts branched from real-data states provide high-quality additional training signal for the critic and actor, dramatically improving sample efficiency relative to model-free SAC alone, without relying on long imagined trajectories where model errors accumulate.
 
-The implementation matches the paper's HalfCheetah-v5 configuration (ensemble size B=7, elite size 5, rollout length k=1, gradient-steps-per-env-step G=40, real-data fraction 5 %, rollout batch M=400), with the only intentional deviation being a reduced real-environment budget of 45 000 steps (vs. 400 000 in the paper) to allow a fair comparison with Task 1 under the same interaction constraint.
+The implementation matches the paper's HalfCheetah configuration (ensemble size B=7, elite size 5, rollout length k=1, gradient-steps-per-env-step G=40, real-data fraction 5 %, rollout batch M=400), with the only intentional deviation being a reduced real-environment budget of 45 000 steps (vs. 400 000 in the paper) to allow a fair comparison with Task 1 under the same interaction constraint. The choice $k=1$ is intentional: MBPO is designed around short branched rollouts from replay-buffer states, and the paper's HalfCheetah hyperparameter table uses a one-step model horizon.
 
 ## Replay Buffers
 
@@ -301,7 +305,7 @@ $$s' = s + \mu_i(s, \pi(s)) + \varepsilon, \quad \varepsilon \sim \mathcal{N}(0,
 
 where $\pi$ is the **current SAC actor** (stochastic). Using the actor (rather than a random policy) to generate synthetic data ensures that $\mathcal{D}_{\text{model}}$ reflects the states the current policy is likely to visit, keeping the value estimates on-distribution. The done flag for synthetic transitions is always 0 because the ensemble does not predict termination.
 
-With $k = 1$ fixed, compounding model error is zero by construction. For HalfCheetah (smooth dynamics, no contact events), k=1 is sufficient to provide high-quality gradient signal; the paper confirms this is the optimal rollout length for this environment.
+With $k = 1$ fixed, synthetic rollouts avoid multi-step compounding model error, though one-step model error remains. For HalfCheetah, this is a defensible trade-off: the model still supplies many synthetic transitions for SAC updates, while keeping critic targets close to real replay-buffer states.
 
 ## SAC Policy Optimizer
 
@@ -374,9 +378,9 @@ The ensemble NLL (more negative = better log-likelihood) improves from $-17.0$ a
 
 The SAC critic loss is volatile and spikes after each model retrain as $\mathcal{D}_{\text{model}}$ is refreshed with transitions from an updated model, temporarily shifting the target distribution for the Q-function. The actor loss trends downward (more negative) as the policy learns to exploit higher-valued actions. Both signals are consistent with healthy SAC training under a non-stationary data distribution.
 
-![Task 2 SAC Q-value estimate (mean over SAC mini-batches) vs. real environment steps. The monotonic rise from near-zero to approximately 15 000 mirrors the improvement in policy quality.](task2/plots/q_value.jpg)
+![Task 2 SAC Q-value estimate (mean over SAC mini-batches) vs. real environment steps. The steady rise mirrors the improvement in policy quality.](task2/plots/q_value.jpg)
 
-The Q-value estimate rises from near-zero to approximately 15 000 over the 40 000 policy steps, tracking the improvement in average return. No Q-value divergence is observed; the bounded logvar in the ensemble model and the twin-critic minimum both help prevent over-optimistic Q estimates.
+The Q-value estimate rises steadily over the 40 000 policy steps, tracking the improvement in average return. No Q-value divergence is observed; the bounded logvar in the ensemble model and the twin-critic minimum both help prevent over-optimistic Q estimates.
 
 ## Evaluation
 
@@ -405,7 +409,7 @@ Table: Task 2 checkpoint evaluation results. Best checkpoint (45 000 steps) is u
 
 Table: Task 2 final 10-episode evaluation (deterministic rollouts, best checkpoint).
 
-Wall-clock training time: **3 h 20 min 51 s** on CUDA (45 000 real env steps, 1 600 000 SAC gradient updates, 16 000 000 synthetic transitions).
+Wall-clock training time: **3 h 20 min 51 s** on one A800 GPU (45 000 real env steps, 1 600 000 SAC gradient updates, 16 000 000 synthetic transitions).
 
 \newpage
 
@@ -450,7 +454,7 @@ MBPO has one clear instability event at 30 000 real steps (eval mean 2 061, std 
 
 MBPO achieves a final 10-episode mean of **5 740.6** vs MBRL v1.5's **2 762.4**, approximately a **2.1× advantage** on the same environment step budget.
 
-The gap reflects a fundamental difference in how each method uses the learned model. MBRL v1.5 plans inside the model at every real env step, requiring the model to be accurate over a 15-step horizon. Any model error in the CEM rollout translates directly into suboptimal action selection. Furthermore, the shaped objective's heuristic penalties are manually designed to encourage upright posture but may over-constrain the policy (e.g., preventing high-reward forward lunging at the cost of a large torso angle). MBPO, by contrast, uses only 1-step model predictions (k=1), where compounding model error is zero. The learned SAC policy can discover locomotion strategies that no hand-crafted planning objective would find, directly optimizing the true environment reward through 1.6M gradient updates on synthetic data.
+The gap reflects a fundamental difference in how each method uses the learned model. MBRL v1.5 plans inside the model at every real env step, requiring the model to be useful over a 15-step horizon. Model error in the CEM rollout can translate directly into suboptimal action selection, and the shaped objective's heuristic penalties may over-constrain the planner. MBPO, by contrast, uses one-step model rollouts (k=1), which avoids multi-step compounding model error while still producing synthetic transitions for SAC. The learned SAC policy directly optimizes the true environment reward through 1.6M gradient updates on real and synthetic data.
 
 ## Computational Cost
 
@@ -473,7 +477,7 @@ The two algorithms represent different points in the MBRL design space:
 - **MBRL v1.5** implements data-aggregation MBRL with a deterministic MLP dynamics model and CEM-MPC planner. It bootstraps quickly and achieves a final 10-episode mean return of **2762.4 ± 33.5** in 45 000 real env steps, trained in $\sim$ 37 minutes. The monotone learning curve and stable checkpoint evals demonstrate that data-aggregation effectively closes the model's distribution-shift gap across iterations.
 - **MBPO** implements the full MBPO paper recipe with a probabilistic 7-member ensemble, branched k=1 synthetic rollouts, and SAC policy optimization. Despite a slow start (only 53.9 at 10k steps), it reaches **5740.6 ± 123.9** at 45 000 steps, a 2.1× gain over MBRL v1.5, at the cost of 5.5× more wall-clock time ($\sim$ 3 h 21 min).
 - **Sample efficiency crossover** occurs near 18 000–20 000 real env steps: MBRL v1.5 dominates before this point; MBPO dominates thereafter.
-- **MBPO's one-step rollout (k=1)** is the critical design choice that makes the method work at 45 000 steps: zero compounding model error means the ensemble's uncertainty stays well-calibrated and SAC's critic targets remain accurate.
+- **MBPO's one-step rollout (k=1)** is a critical design choice at 45 000 steps: it avoids multi-step compounding model error, though one-step model error remains, while still giving SAC a large synthetic training buffer.
 - **Best-checkpoint saving** proved essential for both methods: MBRL v1.5's post-final-retrain checkpoint underperformed its iter-40 best (2630 vs 2751), and MBPO's 30k-step regression was transparently isolated from the final result by the mechanism.
 
 \newpage
