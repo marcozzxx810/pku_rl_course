@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Task 2: VDN (Value Decomposition Networks) for PettingZoo MPE simple_tag_v3.
+VDN (Value Decomposition Networks) for PettingZoo MPE simple_tag_v3.
 
 Trains 3 adversary (predator) agents cooperatively to catch the good (prey)
 agent using VDN (Sunehag et al. 2017).  Only the 3 adversary agents are
@@ -13,17 +13,6 @@ adversaries (paper Table 1 "S" variant — avoids the lazy-agent problem).
 Deliberate simplifications vs. the paper: feed-forward MLP (no LSTM),
 single-step TD target (no lambda-returns), which is standard for near-fully-
 observed MPE tasks.
-
-Setup:
-    uv venv
-    source .venv/bin/activate
-    uv pip install torch numpy matplotlib pettingzoo[mpe] supersuit pygame \
-                   imageio imageio-ffmpeg tqdm
-
-Usage:
-    python submission/task2/Code.py --mode train --episodes 2000
-    python submission/task2/Code.py --mode eval   --checkpoint submission/task2/checkpoints/best_model.pt
-    python submission/task2/Code.py --mode record --checkpoint submission/task2/checkpoints/best_model.pt --video-seconds 30
 """
 
 # =============================================================================

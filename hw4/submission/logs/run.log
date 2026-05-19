@@ -3,32 +3,32 @@ args: {'mode': 'train', 'episodes': 100000, 'seed': None, 'checkpoint': None, 'e
 Detected OBS_DIM=19 (base=16, use_agent_id=True)
 Device: cpu | OBS_DIM=19 | N_ACTIONS=5 | N_ADV=3 | dueling=True
 [epsilon schedule] EPS_DECAY_STEPS = 4000000 (0.4 x 100000 ep x 100 steps)
-Config saved → submission/logs/config.json
+Config saved → logs/config.json
 Train:   0%|          | 0/100000 [00:00<?, ?ep/s]Train:   0%|          | 154/100000 [00:05<54:15, 30.67ep/s]Train:   0%|          | 308/100000 [00:10<55:03, 30.18ep/s]Train:   0%|          | 463/100000 [00:15<54:22, 30.51ep/s][Ep500] mean=13.67 ± 22.13  (min=0.00 max=90.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=13.67
 Train:   1%|          | 616/100000 [00:21<59:31, 27.83ep/s]Train:   1%|          | 767/100000 [00:26<57:49, 28.61ep/s]Train:   1%|          | 914/100000 [00:31<57:16, 28.83ep/s][Ep1000] mean=22.33 ± 25.26  (min=0.00 max=80.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=22.33
 Train:   1%|1         | 1060/100000 [00:37<1:00:58, 27.04ep/s]Train:   1%|1         | 1206/100000 [00:42<59:28, 27.68ep/s]  Train:   1%|1         | 1349/100000 [00:47<58:51, 27.93ep/s]Train:   1%|1         | 1493/100000 [00:52<58:19, 28.15ep/s][Ep1500] mean=65.00 ± 59.93  (min=0.00 max=190.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=65.00
 Train:   2%|1         | 1635/100000 [00:58<1:02:22, 26.28ep/s]Train:   2%|1         | 1781/100000 [01:03<1:00:26, 27.09ep/s]Train:   2%|1         | 1932/100000 [01:08<58:25, 27.98ep/s]  [Ep2000] mean=95.33 ± 69.08  (min=0.00 max=210.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=95.33
 Train:   2%|2         | 2074/100000 [01:14<1:00:50, 26.83ep/s]Train:   2%|2         | 2217/100000 [01:19<59:44, 27.28ep/s]  Train:   2%|2         | 2363/100000 [01:24<58:30, 27.81ep/s][Ep2500] mean=139.00 ± 77.13  (min=0.00 max=280.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=139.00
 Train:   3%|2         | 2503/100000 [01:30<1:01:38, 26.36ep/s]Train:   3%|2         | 2650/100000 [01:35<59:39, 27.20ep/s]  Train:   3%|2         | 2794/100000 [01:40<58:41, 27.60ep/s]Train:   3%|2         | 2941/100000 [01:45<57:31, 28.12ep/s][Ep3000] mean=114.67 ± 61.09  (min=0.00 max=220.00)
 Train:   3%|3         | 3083/100000 [01:51<1:00:34, 26.67ep/s]Train:   3%|3         | 3223/100000 [01:56<59:38, 27.04ep/s]  Train:   3%|3         | 3366/100000 [02:01<58:38, 27.46ep/s][Ep3500] mean=194.33 ± 93.37  (min=0.00 max=380.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=194.33
 Train:   4%|3         | 3505/100000 [02:07<1:01:22, 26.21ep/s]Train:   4%|3         | 3646/100000 [02:12<1:00:00, 26.76ep/s]Train:   4%|3         | 3791/100000 [02:17<58:33, 27.38ep/s]  Train:   4%|3         | 3935/100000 [02:22<57:42, 27.74ep/s][Ep4000] mean=195.67 ± 108.92  (min=10.00 max=440.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=195.67
 Train:   4%|4         | 4075/100000 [02:28<1:00:39, 26.36ep/s]Train:   4%|4         | 4217/100000 [02:33<59:21, 26.90ep/s]  Train:   4%|4         | 4360/100000 [02:38<58:19, 27.33ep/s][Ep4500] mean=175.67 ± 89.80  (min=0.00 max=400.00)
 Train:   4%|4         | 4500/100000 [02:44<1:01:03, 26.07ep/s]Train:   5%|4         | 4644/100000 [02:49<59:17, 26.80ep/s]  Train:   5%|4         | 4788/100000 [02:54<58:04, 27.32ep/s]Train:   5%|4         | 4932/100000 [02:59<57:11, 27.71ep/s][Ep5000] mean=244.00 ± 85.81  (min=70.00 max=410.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=244.00
 Train:   5%|5         | 5072/100000 [03:05<1:00:23, 26.20ep/s]Train:   5%|5         | 5215/100000 [03:10<58:47, 26.87ep/s]  Train:   5%|5         | 5354/100000 [03:15<58:13, 27.09ep/s]Train:   5%|5         | 5498/100000 [03:20<57:11, 27.54ep/s][Ep5500] mean=191.33 ± 82.98  (min=50.00 max=400.00)
 Train:   6%|5         | 5637/100000 [03:26<59:55, 26.25ep/s]Train:   6%|5         | 5782/100000 [03:31<58:07, 27.02ep/s]Train:   6%|5         | 5925/100000 [03:36<57:07, 27.45ep/s][Ep6000] mean=224.67 ± 90.69  (min=40.00 max=410.00)
@@ -52,23 +52,23 @@ Config saved → submission/logs/config.json
 Train:  15%|#4        | 14633/100000 [08:54<54:55, 25.90ep/s]Train:  15%|#4        | 14772/100000 [08:59<53:47, 26.41ep/s]Train:  15%|#4        | 14916/100000 [09:04<52:20, 27.09ep/s][Ep15000] mean=188.67 ± 69.99  (min=40.00 max=310.00)
 Train:  15%|#5        | 15053/100000 [09:10<54:55, 25.78ep/s]Train:  15%|#5        | 15193/100000 [09:15<53:35, 26.37ep/s]Train:  15%|#5        | 15335/100000 [09:20<52:24, 26.93ep/s]Train:  15%|#5        | 15476/100000 [09:25<51:37, 27.29ep/s][Ep15500] mean=240.67 ± 97.81  (min=100.00 max=410.00)
 Train:  16%|#5        | 15614/100000 [09:31<54:32, 25.79ep/s]Train:  16%|#5        | 15755/100000 [09:36<53:03, 26.46ep/s]Train:  16%|#5        | 15894/100000 [09:41<52:12, 26.85ep/s][Ep16000] mean=251.33 ± 78.90  (min=60.00 max=370.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=251.33
 Train:  16%|#6        | 16030/100000 [09:47<54:35, 25.64ep/s]Train:  16%|#6        | 16170/100000 [09:52<53:10, 26.28ep/s]Train:  16%|#6        | 16311/100000 [09:57<52:03, 26.80ep/s]Train:  16%|#6        | 16452/100000 [10:02<51:17, 27.15ep/s][Ep16500] mean=225.67 ± 79.44  (min=60.00 max=380.00)
 Train:  17%|#6        | 16589/100000 [10:08<53:50, 25.82ep/s]Train:  17%|#6        | 16729/100000 [10:13<52:34, 26.40ep/s]Train:  17%|#6        | 16862/100000 [10:18<52:50, 26.22ep/s][Ep17000] mean=237.67 ± 63.75  (min=110.00 max=370.00)
 Train:  17%|#7        | 17000/100000 [10:24<54:23, 25.44ep/s]Train:  17%|#7        | 17146/100000 [10:29<52:13, 26.44ep/s]Train:  17%|#7        | 17279/100000 [10:35<52:48, 26.11ep/s]Train:  17%|#7        | 17412/100000 [10:40<52:29, 26.22ep/s][Ep17500] mean=268.00 ± 72.31  (min=120.00 max=390.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=268.00
 Train:  18%|#7        | 17544/100000 [10:45<54:46, 25.09ep/s]Train:  18%|#7        | 17688/100000 [10:50<52:34, 26.09ep/s]Train:  18%|#7        | 17834/100000 [10:55<50:46, 26.97ep/s]Train:  18%|#7        | 17970/100000 [11:00<50:36, 27.01ep/s][Ep18000] mean=231.00 ± 70.63  (min=80.00 max=390.00)
 Train:  18%|#8        | 18106/100000 [11:06<52:44, 25.88ep/s]Train:  18%|#8        | 18252/100000 [11:11<50:50, 26.80ep/s]Train:  18%|#8        | 18400/100000 [11:16<49:20, 27.56ep/s][Ep18500] mean=260.67 ± 76.02  (min=120.00 max=450.00)
 Train:  19%|#8        | 18539/100000 [11:22<51:13, 26.50ep/s]Train:  19%|#8        | 18684/100000 [11:27<49:48, 27.21ep/s]Train:  19%|#8        | 18832/100000 [11:32<48:31, 27.87ep/s]Train:  19%|#8        | 18976/100000 [11:37<48:01, 28.12ep/s][Ep19000] mean=265.67 ± 80.77  (min=100.00 max=400.00)
 Train:  19%|#9        | 19118/100000 [11:43<50:07, 26.89ep/s]Train:  19%|#9        | 19264/100000 [11:48<48:51, 27.54ep/s]Train:  19%|#9        | 19413/100000 [11:53<47:42, 28.16ep/s][Ep19500] mean=273.33 ± 80.10  (min=130.00 max=410.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=273.33
 Train:  20%|#9        | 19555/100000 [11:59<50:30, 26.55ep/s]Train:  20%|#9        | 19691/100000 [12:04<50:08, 26.70ep/s]Train:  20%|#9        | 19830/100000 [12:09<49:30, 26.99ep/s]Train:  20%|#9        | 19976/100000 [12:14<48:20, 27.59ep/s][Ep20000] mean=266.00 ± 81.26  (min=110.00 max=420.00)
 Train:  20%|##        | 20115/100000 [12:20<50:27, 26.39ep/s]Train:  20%|##        | 20261/100000 [12:25<48:54, 27.17ep/s]Train:  20%|##        | 20403/100000 [12:30<48:14, 27.50ep/s][Ep20500] mean=243.33 ± 61.17  (min=150.00 max=410.00)
 Train:  21%|##        | 20542/100000 [12:36<50:34, 26.18ep/s]Train:  21%|##        | 20686/100000 [12:41<49:09, 26.89ep/s]Train:  21%|##        | 20832/100000 [12:46<47:54, 27.54ep/s]Train:  21%|##        | 20979/100000 [12:51<46:56, 28.06ep/s][Ep21000] mean=314.67 ± 75.88  (min=140.00 max=500.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=314.67
 Train:  21%|##1       | 21120/100000 [12:57<49:14, 26.70ep/s]Train:  21%|##1       | 21262/100000 [13:02<48:18, 27.16ep/s]Train:  21%|##1       | 21406/100000 [13:07<47:24, 27.63ep/s][Ep21500] mean=307.00 ± 78.75  (min=180.00 max=490.00)
 Train:  22%|##1       | 21545/100000 [13:13<49:29, 26.42ep/s]Train:  22%|##1       | 21690/100000 [13:18<48:08, 27.11ep/s]Train:  22%|##1       | 21836/100000 [13:23<47:03, 27.68ep/s]Train:  22%|##1       | 21981/100000 [13:28<46:25, 28.01ep/s][Ep22000] mean=261.00 ± 78.54  (min=50.00 max=430.00)
@@ -93,7 +93,7 @@ Config saved → submission/logs/config.json
 Train:  31%|###1      | 31031/100000 [19:06<44:15, 25.97ep/s]Train:  31%|###1      | 31163/100000 [19:11<44:00, 26.07ep/s]Train:  31%|###1      | 31305/100000 [19:16<42:49, 26.74ep/s]Train:  31%|###1      | 31446/100000 [19:21<42:04, 27.16ep/s][Ep31500] mean=281.67 ± 77.98  (min=80.00 max=420.00)
 Train:  32%|###1      | 31583/100000 [19:27<43:53, 25.98ep/s]Train:  32%|###1      | 31726/100000 [19:32<42:35, 26.72ep/s]Train:  32%|###1      | 31871/100000 [19:37<41:28, 27.37ep/s][Ep32000] mean=269.00 ± 64.31  (min=150.00 max=400.00)
 Train:  32%|###2      | 32009/100000 [19:43<43:36, 25.99ep/s]Train:  32%|###2      | 32154/100000 [19:48<42:10, 26.81ep/s]Train:  32%|###2      | 32297/100000 [19:53<41:21, 27.28ep/s]Train:  32%|###2      | 32440/100000 [19:58<40:45, 27.63ep/s][Ep32500] mean=317.00 ± 67.78  (min=190.00 max=460.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=317.00
 Train:  33%|###2      | 32579/100000 [20:04<43:05, 26.08ep/s]Train:  33%|###2      | 32720/100000 [20:09<42:06, 26.63ep/s]Train:  33%|###2      | 32864/100000 [20:14<41:06, 27.22ep/s][Ep33000] mean=276.33 ± 67.30  (min=150.00 max=400.00)
 Train:  33%|###3      | 33001/100000 [20:20<42:47, 26.09ep/s]Train:  33%|###3      | 33143/100000 [20:25<41:42, 26.71ep/s]Train:  33%|###3      | 33288/100000 [20:30<40:42, 27.32ep/s]Train:  33%|###3      | 33427/100000 [20:35<40:25, 27.45ep/s][Ep33500] mean=304.67 ± 83.18  (min=100.00 max=470.00)
@@ -101,7 +101,7 @@ Config saved → submission/logs/config.json
 Train:  34%|###4      | 34133/100000 [21:02<41:46, 26.28ep/s]Train:  34%|###4      | 34275/100000 [21:07<40:47, 26.85ep/s]Train:  34%|###4      | 34419/100000 [21:12<39:53, 27.40ep/s][Ep34500] mean=309.33 ± 56.80  (min=180.00 max=420.00)
 Train:  35%|###4      | 34557/100000 [21:17<41:41, 26.16ep/s]Train:  35%|###4      | 34702/100000 [21:22<40:24, 26.93ep/s]Train:  35%|###4      | 34844/100000 [21:27<39:44, 27.32ep/s]Train:  35%|###4      | 34986/100000 [21:32<39:12, 27.64ep/s][Ep35000] mean=307.67 ± 72.65  (min=190.00 max=450.00)
 Train:  35%|###5      | 35125/100000 [21:38<41:12, 26.24ep/s]Train:  35%|###5      | 35269/100000 [21:43<40:03, 26.94ep/s]Train:  35%|###5      | 35412/100000 [21:48<39:17, 27.40ep/s][Ep35500] mean=345.67 ± 73.29  (min=190.00 max=550.00)
-  Checkpoint saved → submission/checkpoints/best_model.pt
+  Checkpoint saved → checkpoints/best_model.pt
   ** New best eval=345.67
 Train:  36%|###5      | 35550/100000 [21:54<41:00, 26.20ep/s]Train:  36%|###5      | 35691/100000 [21:59<40:05, 26.74ep/s]Train:  36%|###5      | 35835/100000 [22:04<39:09, 27.31ep/s]Train:  36%|###5      | 35979/100000 [22:09<38:29, 27.72ep/s][Ep36000] mean=289.00 ± 60.19  (min=150.00 max=400.00)
 Train:  36%|###6      | 36119/100000 [22:15<40:12, 26.48ep/s]Train:  36%|###6      | 36262/100000 [22:20<39:15, 27.06ep/s]Train:  36%|###6      | 36406/100000 [22:25<38:30, 27.52ep/s][Ep36500] mean=322.67 ± 74.83  (min=200.00 max=530.00)
@@ -234,18 +234,18 @@ Config saved → submission/logs/config.json
 Train:  99%|#########8| 98619/100000 [1:02:13<00:58, 23.43ep/s]Train:  99%|#########8| 98748/100000 [1:02:18<00:52, 24.07ep/s]Train:  99%|#########8| 98877/100000 [1:02:23<00:45, 24.52ep/s][Ep99000] mean=322.33 ± 66.67  (min=240.00 max=480.00)
 Train:  99%|#########9| 99001/100000 [1:02:29<00:42, 23.38ep/s]Train:  99%|#########9| 99130/100000 [1:02:34<00:36, 24.03ep/s]Train:  99%|#########9| 99258/100000 [1:02:39<00:30, 24.43ep/s]Train:  99%|#########9| 99385/100000 [1:02:44<00:24, 24.69ep/s][Ep99500] mean=326.67 ± 64.46  (min=220.00 max=470.00)
 Train: 100%|#########9| 99509/100000 [1:02:50<00:20, 23.48ep/s]Train: 100%|#########9| 99637/100000 [1:02:55<00:15, 24.08ep/s]Train: 100%|#########9| 99766/100000 [1:03:00<00:09, 24.54ep/s]Train: 100%|#########9| 99895/100000 [1:03:05<00:04, 24.87ep/s][Ep100000] mean=307.33 ± 58.76  (min=180.00 max=400.00)
-  Checkpoint saved → submission/checkpoints/final_model.pt
+  Checkpoint saved → checkpoints/final_model.pt
 Train: 100%|##########| 100000/100000 [1:03:10<00:00, 26.38ep/s]
-Plots saved to submission/plots/
+Plots saved to plots/
 
 [Auto-record] Recording video with best checkpoint ...
-Loaded checkpoint from submission/checkpoints/best_model.pt  (ep=35500, best_eval=345.67)
+Loaded checkpoint from checkpoints/best_model.pt  (ep=35500, best_eval=345.67)
 [Record] target ≥ 30s (300 frames @ 10 fps) ...
   ep 1: return=290.0, frames_so_far=100
   ep 2: return=290.0, frames_so_far=200
   ep 3: return=310.0, frames_so_far=300
 IMAGEIO FFMPEG_WRITER WARNING: input image is not divisible by macro_block_size=16, resizing from (700, 700) to (704, 704) to ensure video compatibility with most codecs and players. To prevent resizing, make your input image divisible by the macro_block_size or set the macro_block_size to 1 (risking incompatibility).
-[Record] saved submission/videos/eval_demo.mp4  (300 frames, 30.0s)
+[Record] saved videos/eval_demo.mp4  (300 frames, 30.0s)
 
 Training done. best_eval=345.67  steps=10000000
 === Done 2026-05-07 23:02:56 ===
